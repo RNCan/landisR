@@ -817,12 +817,12 @@ bs52_large_ward_table52 <- function(config, neighborhood,
           variant,
           "ward2019"
         )) {
+      support_limit <- bs52_ward2019_support_limit(
+        maximum,
+        config$cell_length
+      )
       probability[
-        neighborhood$distance >
-          maximum +
-          config$cell_length /
-          2 *
-          1.414
+        neighborhood$distance > support_limit
       ] <- 0
     }
 

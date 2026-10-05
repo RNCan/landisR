@@ -149,9 +149,13 @@ bs52_ward_probability_rcpp <- function(mature, active, targets, effective,
   if (effective == -1) return(as.numeric(destination_active))
   probability <- bs52_ward_kernel(
     neighborhood$distance, effective, maximum, cell_length)
-  if (variant == "ward2019")
-    probability[neighborhood$distance >
-                  maximum + cell_length / 2 * 1.414] <- 0
+  if (variant == "ward2019") {
+    support_limit <- bs52_ward2019_support_limit(
+      maximum,
+      cell_length
+    )
+    probability[neighborhood$distance > support_limit] <- 0
+  }
   local <- mature[targets] & destination_active
   pending <- which(destination_active & !local)
   if (!length(pending)) return(as.numeric(local))

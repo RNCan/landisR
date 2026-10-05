@@ -4,13 +4,33 @@
 bs52_ward_neighborhood <- function(cell_length, max_seed_distance) {
   bs52_scalar(cell_length, "cell length", .Machine$double.eps)
   bs52_scalar(max_seed_distance, "maximum seed distance")
-  radius <- max_seed_distance + cell_length / 2
+  # LANDIS-II coarse-grid safeguard: Ward integrates dispersal across the
+  # destination-cell width. Always retain at least the first cardinal ring
+  # even when a species MaxSeedDistance is shorter than one raster cell.
+  radius <- max(
+    cell_length,
+    max_seed_distance + cell_length / 2
+  )
   n <- trunc(radius / cell_length) + 1L
   x <- expand.grid(row = seq_len(n), col = 0:n)
   x$distance <- cell_length * sqrt(x$row^2 + x$col^2)
   x <- x[x$distance <= radius, ]
   x[order(x$distance, x$row, x$col), ]
 }
+
+# Maximum centre-to-centre distance considered by the landisR Ward-2019
+# implementation. LANDIS-II evaluates the first adjacent cardinal cell even
+# when MaxSeedDistance is shorter than cell size; retain that one-cell
+# safeguard while preserving the existing species-specific outer support.
+bs52_ward2019_support_limit <- function(maximum, cell_length) {
+  bs52_scalar(maximum, "maximum distance")
+  bs52_scalar(cell_length, "cell length", .Machine$double.eps)
+  max(
+    cell_length,
+    maximum + cell_length / 2 * 1.414
+  )
+}
+
 bs52_ward_kernel <- function(distance, effective, maximum, cell_length) {
   bs52_scalar(effective, "effective distance", .Machine$double.eps)
   bs52_scalar(maximum, "maximum distance", effective)
@@ -41,8 +61,13 @@ bs52_ward_probability <- function(mature, active, targets, effective, maximum,
   destination_active <- active[targets]
   if (effective == -1) return(as.numeric(destination_active))
   prob <- bs52_ward_kernel(neighborhood$distance, effective, maximum, cell_length)
-  if (variant == "ward2019")
-    prob[neighborhood$distance > maximum + cell_length / 2 * 1.414] <- 0
+  if (variant == "ward2019") {
+    support_limit <- bs52_ward2019_support_limit(
+      maximum,
+      cell_length
+    )
+    prob[neighborhood$distance > support_limit] <- 0
+  }
   local <- mature[targets] & destination_active
   pending <- which(destination_active & !local)
   failure_log <- numeric(length(pending))
