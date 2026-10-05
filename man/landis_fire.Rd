@@ -13,60 +13,132 @@ landis_fire(
 }
 \arguments{
   \item{simulation}{A \code{landisR_simulation}.}
-  \item{cells}{Integer vector of active cell IDs affected by fire. These cells
-  are used to identify pre-fire mature serotinous seed sources.}
-  \item{update}{Optional \code{landisR_update}, or function returning one,
-  describing the post-fire cohort or project state. The pre-fire seed sources
-  are captured before this update is applied.}
-  \item{stochastic}{Logical. If \code{TRUE}, establishment is sampled from the
-  current simulation RNG stream. If \code{FALSE}, every positive-probability
-  serotinous establishment succeeds.}
-  \item{severity}{Optional scalar or vector aligned with \code{cells}. Severity
-  is currently recorded as event metadata and does not alter cone opening or
-  establishment.}
-  \item{metadata}{Optional list added to the fire event history.}
+  \item{cells}{Integer vector of active cell IDs affected by fire. These
+  cells define the fire footprint and are inspected for mature serotinous
+  seed sources before any post-fire update is applied.}
+  \item{update}{Optional \code{landisR_update} describing the post-fire
+  cohort or project state. It is applied after pre-fire seed sources are
+  captured and before serotinous establishment is evaluated. For a severe
+  stand-replacing fire, a typical update is
+  \code{landis_update(clear_cells = cells)}.}
+  \item{stochastic}{Logical. If \code{TRUE}, recruitment is sampled from
+  the simulation RNG stream. If \code{FALSE}, every destination with a
+  strictly positive final establishment probability recruits. The latter is
+  mainly useful for diagnostics and spatial-support tests.}
+  \item{severity}{Optional finite numeric scalar or vector aligned with
+  \code{cells}. In the current implementation severity is stored in fire
+  event metadata. It does not yet alter cone opening, seed release, or
+  establishment probability.}
+  \item{metadata}{Optional list appended to the fire-event history.}
 }
 \description{
-Implements fire-triggered serotinous recruitment for landisR beta.3. Mature
-serotinous seed sources are identified from the pre-fire state. An optional
-post-fire update is then applied, followed by serotinous seed arrival and
-establishment using the post-fire light and establishment environment.
+Applies a structured fire event and evaluates fire-triggered serotinous
+recruitment. Mature serotinous sources are identified from the pre-fire
+cohort state, an optional fire-impact update is applied, and seed arrival
+and establishment are then evaluated in the post-fire environment.
 }
 \details{
-Species may define \code{serotiny_type} as \code{"none"},
-\code{"facultative"}, or \code{"strict"}. Facultative species retain ordinary
-sexual recruitment and also recruit after fire. Strict species are excluded
-from ordinary sexual recruitment and can recruit naturally only through a
-structured fire event.
+\strong{Event order.} The function intentionally separates fire-triggered
+seed release from post-fire establishment. The order is: (1) identify mature
+serotinous parent cohorts in \code{cells}; (2) save those pre-fire sources;
+(3) apply \code{update}, if supplied; (4) disperse fire-released seed; (5)
+apply post-fire SEP and sufficient-light constraints; and (6) create new
+age-1 cohorts where recruitment succeeds.
 
-\code{serotiny_dispersal} may be \code{"local"} or \code{"kernel"}. Local
-mode restricts fire-released seed to the burned source cell, preserving the
-LANDIS-II-style behavior. Kernel mode disperses fire-released seed with the
-species Ward kernel using effective and maximum seed distances. Destination
-cells do not need to have burned, but must satisfy normal establishment and
-light constraints.
+\strong{Serotiny type.} Species may define \code{serotiny_type} as:
+\itemize{
+  \item \code{"none"}: no serotinous recruitment.
+  \item \code{"facultative"}: ordinary sexual recruitment remains
+  available and fire also activates serotinous recruitment.
+  \item \code{"strict"}: ordinary natural sexual recruitment is
+  disabled. Natural seed recruitment can occur only through a structured
+  fire event with a mature pre-fire source.
+}
 
-For imported LANDIS-II species with
-\code{post_fire_regeneration = "serotiny"}, missing landisR-specific traits
-default to \code{serotiny_type = "facultative"} and
-\code{serotiny_dispersal = "local"}.
+Strict serotiny only blocks the ordinary natural sexual-recruitment path.
+External state updates or planting represented by another model remain
+separate processes.
+
+\strong{Post-fire seed dispersal.} Serotinous species use
+\code{serotiny_dispersal}:
+\itemize{
+  \item \code{"local"}: fire-released seed is available only in the
+  burned source cell.
+  \item \code{"kernel"}: fire-released seed uses the species Ward
+  dispersal kernel with \code{effective_seed_distance} and
+  \code{max_seed_distance}. Destination cells do not need to have burned.
+}
+
+The Ward implementation preserves access to the first cardinal neighboring
+cell when species dispersal distances are shorter than raster resolution.
+This prevents coarse rasters from making short-distance species completely
+unable to disperse between cells.
+
+\strong{Arrival is not establishment.} In kernel mode a non-burned cell
+may receive seeds but still fail to recruit. The final establishment
+probability combines seed arrival with the normal species- and
+ecoregion-specific establishment environment, including SEP and
+sufficient-light probability. Dense unburned forest can therefore receive
+serotinous seed while remaining unsuitable for establishment.
+
+\strong{LANDIS-II compatibility.} When a LANDIS-II project is imported, a
+species with \code{post_fire_regeneration = "serotiny"} and no explicit
+landisR serotiny traits defaults to
+\code{serotiny_type = "facultative"} and
+\code{serotiny_dispersal = "local"}. This retains the existing
+LANDIS-II-style behavior unless the user explicitly requests strict
+serotiny or Ward-kernel post-fire dispersal.
+
+\strong{Random-number state.} With \code{stochastic = TRUE}, fire
+recruitment consumes and advances the simulation RNG state, so repeated runs
+remain reproducible when initialized from the same simulation state and RNG
+state.
 }
 \value{
-The updated \code{landisR_simulation}, including the advanced RNG state and a
-\code{"fire"} entry in its event history.
+The updated \code{landisR_simulation}. The simulation history receives a
+\code{"fire"} event containing the affected cells, severity metadata,
+serotinous source counts, recruited-cell count, and recruited-cohort count.
+}
+\seealso{
+\code{\link{landis_initialize}}, \code{\link{landis_step}},
+\code{\link{landis_update}}, \code{\link{landis_apply}},
+\code{\link{serotiny}}
 }
 \examples{
 \dontrun{
-# The external fire model supplies the post-fire cohort state.
-burned <- c(101L, 102L)
-after_fire <- landis_state(sim, "cohorts", cells = burned)
-after_fire$biomass <- floor(after_fire$biomass * 0.25)
+# Import or build a project, then configure jack pine as strictly serotinous.
+project <- landis_read(
+  source_directory = "D:/LANDIS/my_project",
+  scenario = "scenario.txt"
+)
+
+i <- project$canonical$species$species == "PINU.BAN"
+project$canonical$species$serotiny_type[i] <- "strict"
+project$canonical$species$serotiny_dispersal[i] <- "kernel"
+
+sim <- landis_initialize(project, seed = 4357L)
+
+# Example severe fire. Mature seed sources are captured before cells are
+# cleared, then Ward dispersal and post-fire establishment are evaluated.
+burned_cells <- c(101L, 102L, 103L)
 
 sim <- landis_fire(
   sim,
-  cells = burned,
-  update = landis_update(cohorts = after_fire),
-  severity = 4
+  cells = burned_cells,
+  update = landis_update(clear_cells = burned_cells),
+  severity = 5
+)
+
+# Continue succession normally.
+sim <- landis_step(sim)
+
+# Diagnostic mode: every positive-probability establishment succeeds.
+sim2 <- landis_initialize(project, seed = 4357L)
+sim2 <- landis_fire(
+  sim2,
+  cells = burned_cells,
+  update = landis_update(clear_cells = burned_cells),
+  stochastic = FALSE
 )
 }
 }
