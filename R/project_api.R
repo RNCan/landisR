@@ -1833,9 +1833,48 @@ landis_run <- function(
     landisR_root()
   )
 
+  dir.create(
+    output_directory,
+    recursive = TRUE,
+    showWarnings = FALSE
+  )
+
+  run_started_at <- Sys.time()
+
+  running_descriptor <-
+    landisR_new_run_descriptor(
+      project = project$name,
+      output_directory = output_directory,
+      duration = duration,
+      seed = seed,
+      cache_directory = cache_directory,
+      canonical_directory = canonical_directory,
+      status = "running",
+      result = NULL,
+      started_at = run_started_at
+    )
+
+  landis_save_run(
+    running_descriptor,
+    output_directory = output_directory
+  )
+
   result <-
-    bs52_run_large_production52(
-      scenario
+    tryCatch(
+      bs52_run_large_production52(
+        scenario
+      ),
+      error = function(e) {
+        failed_descriptor <- running_descriptor
+        failed_descriptor$status <- "failed"
+        failed_descriptor$finished_at <- Sys.time()
+        failed_descriptor$error <- conditionMessage(e)
+        landis_save_run(
+          failed_descriptor,
+          output_directory = output_directory
+        )
+        stop(e)
+      }
     )
 
   out <-
@@ -1858,6 +1897,17 @@ landis_run <- function(
     out
   ) <-
     "landisR_run"
+
+  out$status <- "complete"
+  out$started_at <- run_started_at
+  out$finished_at <- Sys.time()
+  out$cache_directory <- cache_directory
+  out$canonical_directory <- canonical_directory
+
+  landis_save_run(
+    out,
+    output_directory = output_directory
+  )
 
   out
 }

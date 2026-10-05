@@ -653,6 +653,1102 @@ landisR_state_list <- function(
   )
 }
 
+landisR_run_state_index <- function(
+    run,
+    type = c(
+      "snapshot",
+      "checkpoint"
+    )) {
+
+  type <-
+    match.arg(
+      type
+    )
+
+  if (!inherits(
+        run,
+        "landisR_run"
+      ) ||
+      !is.list(
+        run
+      ) ||
+      !identical(
+        run$format,
+        "landisR/run-v1"
+      )) {
+    landisR_stop(
+      "run doit etre un landisR_run."
+    )
+  }
+
+  directory <-
+    file.path(
+      run$output_directory,
+      if (identical(
+            type,
+            "snapshot"
+          )) {
+        "snapshots"
+      } else {
+        "checkpoints"
+      }
+    )
+
+  prefix <-
+    if (identical(
+          type,
+          "snapshot"
+        )) {
+      "snapshot"
+    } else {
+      "checkpoint"
+    }
+
+  if (!dir.exists(
+        directory
+      )) {
+    return(
+      data.frame(
+        year = integer(),
+        path = character(),
+        stringsAsFactors = FALSE
+      )
+    )
+  }
+
+  files <-
+    list.files(
+      directory,
+      pattern = paste0(
+        "^",
+        prefix,
+        "_[0-9]+\\.rds$"
+      ),
+      full.names = TRUE
+    )
+
+  if (!length(
+        files
+      )) {
+    return(
+      data.frame(
+        year = integer(),
+        path = character(),
+        stringsAsFactors = FALSE
+      )
+    )
+  }
+
+  years <-
+    suppressWarnings(
+      as.integer(
+        sub(
+          paste0(
+            "^",
+            prefix,
+            "_([0-9]+)\\.rds$"
+          ),
+          "\\1",
+          basename(
+            files
+          )
+        )
+      )
+    )
+
+  keep <-
+    !is.na(
+      years
+    )
+
+  out <-
+    data.frame(
+      year = years[keep],
+      path = files[keep],
+      stringsAsFactors = FALSE
+    )
+
+  out <-
+    out[
+      order(
+        out$year
+      ),
+      ,
+      drop = FALSE
+    ]
+
+  rownames(
+    out
+  ) <-
+    NULL
+
+  out
+}
+
+landisR_run_pick_state_file <- function(
+    run,
+    type = c(
+      "snapshot",
+      "checkpoint"
+    ),
+    year = NULL) {
+
+  type <-
+    match.arg(
+      type
+    )
+
+  index <-
+    landisR_run_state_index(
+      run,
+      type = type
+    )
+
+  if (!nrow(
+        index
+      )) {
+    landisR_stop(
+      "Aucun ",
+      type,
+      " disponible dans le dossier de simulation : ",
+      run$output_directory
+    )
+  }
+
+  if (is.null(
+        year
+      )) {
+    year <-
+      max(
+        index$year
+      )
+  } else {
+    year <-
+      landisR_scalar_integer(
+        year,
+        "year",
+        0L
+      )
+  }
+
+  where <-
+    match(
+      year,
+      index$year
+    )
+
+  if (is.na(
+        where
+      )) {
+
+    shown <-
+      tail(
+        index$year,
+        20L
+      )
+
+    landisR_stop(
+      "Aucun ",
+      type,
+      " disponible pour l'annee ",
+      year,
+      ". Annees disponibles : ",
+      paste(
+        shown,
+        collapse = ", "
+      ),
+      if (nrow(
+            index
+          ) >
+          length(
+            shown
+          )) {
+        " (20 dernieres affichees)."
+      } else {
+        "."
+      }
+    )
+  }
+
+  list(
+    year =
+      as.integer(
+        year
+      ),
+    path =
+      index$path[
+        where
+      ]
+  )
+}
+
+landisR_run_context_candidates <- function(
+    run) {
+
+  candidates <-
+    character()
+
+  if (!is.null(
+        run$context_cache_file
+      )) {
+    candidates <-
+      c(
+        candidates,
+        as.character(
+          run$context_cache_file
+        )
+      )
+  }
+
+  if (!is.null(
+        run$result
+      ) &&
+      is.list(
+        run$result
+      ) &&
+      !is.null(
+        run$result$complete
+      ) &&
+      is.list(
+        run$result$complete
+      ) &&
+      !is.null(
+        run$result$complete$context_cache_file
+      )) {
+    candidates <-
+      c(
+        candidates,
+        as.character(
+          run$result$complete$context_cache_file
+        )
+      )
+  }
+
+  if (!is.null(
+        run$cache_directory
+      )) {
+    candidates <-
+      c(
+        candidates,
+        file.path(
+          as.character(
+            run$cache_directory
+          ),
+          "context.rds"
+        )
+      )
+  }
+
+  if (!is.null(
+        run$output_directory
+      ) &&
+      !is.null(
+        run$project
+      ) &&
+      length(
+        run$project
+      ) ==
+        1L) {
+
+    safe_project <-
+      gsub(
+        "[^A-Za-z0-9._-]+",
+        "_",
+        as.character(
+          run$project
+        )
+      )
+
+    candidates <-
+      c(
+        candidates,
+        file.path(
+          dirname(
+            run$output_directory
+          ),
+          paste0(
+            ".landisR_cache_",
+            safe_project
+          ),
+          "context.rds"
+        )
+      )
+  }
+
+  unique(
+    normalizePath(
+      candidates[
+        nzchar(
+          candidates
+        )
+      ],
+      winslash = "/",
+      mustWork = FALSE
+    )
+  )
+}
+
+landisR_run_canonical_candidates <- function(
+    run,
+    context_candidates = character()) {
+
+  candidates <-
+    character()
+
+  if (!is.null(
+        run$canonical_directory
+      )) {
+    candidates <-
+      c(
+        candidates,
+        as.character(
+          run$canonical_directory
+        )
+      )
+  }
+
+  if (!is.null(
+        run$cache_directory
+      )) {
+    candidates <-
+      c(
+        candidates,
+        file.path(
+          as.character(
+            run$cache_directory
+          ),
+          "canonical_inputs"
+        )
+      )
+  }
+
+  if (length(
+        context_candidates
+      )) {
+    candidates <-
+      c(
+        candidates,
+        file.path(
+          dirname(
+            context_candidates
+          ),
+          "canonical_inputs"
+        )
+      )
+  }
+
+  unique(
+    normalizePath(
+      candidates[
+        nzchar(
+          candidates
+        )
+      ],
+      winslash = "/",
+      mustWork = FALSE
+    )
+  )
+}
+
+landisR_load_run_context <- function(
+    run) {
+
+  context_candidates <-
+    landisR_run_context_candidates(
+      run
+    )
+
+  existing_context <-
+    context_candidates[
+      file.exists(
+        context_candidates
+      )
+    ]
+
+  if (length(
+        existing_context
+      )) {
+
+    ctx <-
+      readRDS(
+        existing_context[1L]
+      )
+
+    if (!is.list(
+          ctx
+        ) ||
+        is.null(
+          ctx$ids
+        ) ||
+        is.null(
+          ctx$config
+        )) {
+      landisR_stop(
+        "Le cache de contexte landisR est invalide : ",
+        existing_context[1L]
+      )
+    }
+
+    return(
+      ctx
+    )
+  }
+
+  canonical_candidates <-
+    landisR_run_canonical_candidates(
+      run,
+      context_candidates
+    )
+
+  existing_canonical <-
+    canonical_candidates[
+      dir.exists(
+        canonical_candidates
+      )
+    ]
+
+  if (length(
+        existing_canonical
+      )) {
+
+    landisR_load_engine()
+
+    canonical <-
+      bs52_read_canonical52(
+        existing_canonical[1L]
+      )
+
+    return(
+      bs52_large_context52(
+        canonical
+      )
+    )
+  }
+
+  landisR_stop(
+    "Impossible de retrouver le contexte de la simulation. ",
+    "Le cache context.rds et les entrees canoniques sont absents."
+  )
+}
+
+landisR_context_cell_metadata <- function(
+    ctx,
+    cell_ids) {
+
+  cell_ids <-
+    as.integer(
+      cell_ids
+    )
+
+  active_ids <-
+    as.integer(
+      ctx$ids
+    )
+
+  position <-
+    match(
+      cell_ids,
+      active_ids
+    )
+
+  if (anyNA(
+        position
+      )) {
+    landisR_stop(
+      "Une cellule demandee est absente du contexte actif."
+    )
+  }
+
+  if (!is.null(
+        ctx$targets
+      ) &&
+      is.matrix(
+        ctx$targets
+      ) &&
+      nrow(
+        ctx$targets
+      ) ==
+        length(
+          active_ids
+        ) &&
+      ncol(
+        ctx$targets
+      ) >=
+        2L) {
+
+    row <-
+      as.integer(
+        ctx$targets[
+          position,
+          1L
+        ]
+      )
+
+    col <-
+      as.integer(
+        ctx$targets[
+          position,
+          2L
+        ]
+      )
+
+  } else if (!is.null(
+               ctx$nrow
+             )) {
+
+    nr <-
+      as.integer(
+        ctx$nrow
+      )
+
+    row <-
+      as.integer(
+        ((cell_ids - 1L) %% nr) + 1L
+      )
+
+    col <-
+      as.integer(
+        ((cell_ids - 1L) %/% nr) + 1L
+      )
+
+  } else {
+    landisR_stop(
+      "Le contexte ne contient pas les coordonnees de grille necessaires."
+    )
+  }
+
+  if (!is.null(
+        ctx$active_eco
+      ) &&
+      length(
+        ctx$active_eco
+      ) ==
+        length(
+          active_ids
+        )) {
+
+    eco_internal <-
+      as.integer(
+        ctx$active_eco[
+          position
+        ]
+      )
+
+  } else if (!is.null(
+               ctx$eco
+             )) {
+
+    eco_internal <-
+      as.integer(
+        ctx$eco[
+          cell_ids
+        ]
+      )
+
+  } else {
+
+    eco_internal <-
+      rep(
+        NA_integer_,
+        length(
+          cell_ids
+        )
+      )
+  }
+
+  ecoregion <-
+    as.character(
+      eco_internal
+    )
+
+  if (!is.null(
+        ctx$ecoregion_code
+      ) &&
+      length(
+        ctx$ecoregion_code
+      ) &&
+      !is.null(
+        names(
+          ctx$ecoregion_code
+        )
+      )) {
+
+    labels <-
+      names(
+        ctx$ecoregion_code
+      )
+
+    values <-
+      as.integer(
+        unname(
+          ctx$ecoregion_code
+        )
+      )
+
+    translated <-
+      labels[
+        match(
+          eco_internal,
+          values
+        )
+      ]
+
+    good <-
+      !is.na(
+        translated
+      )
+
+    ecoregion[good] <-
+      translated[good]
+  }
+
+  data.frame(
+    cell_id = cell_ids,
+    row = row,
+    col = col,
+    ecoregion = ecoregion,
+    stringsAsFactors = FALSE
+  )
+}
+
+landisR_validate_snapshot_object <- function(
+    snapshot,
+    path) {
+
+  if (!is.list(
+        snapshot
+      ) ||
+      is.null(
+        snapshot$format
+      ) ||
+      !grepl(
+        "^landisR52/state-snapshot-v",
+        snapshot$format
+      ) ||
+      is.null(
+        snapshot$cell_id
+      ) ||
+      is.null(
+        snapshot$state_id
+      ) ||
+      is.null(
+        snapshot$state_biomass
+      )) {
+    landisR_stop(
+      "Snapshot landisR invalide : ",
+      path
+    )
+  }
+
+  snapshot
+}
+
+landisR_state_run <- function(
+    run,
+    representation = c(
+      "compact",
+      "cohorts",
+      "biomass"
+    ),
+    cells = NULL,
+    year = NULL) {
+
+  representation <-
+    match.arg(
+      representation
+    )
+
+  if (identical(
+        representation,
+        "compact"
+      ) ||
+      identical(
+        representation,
+        "biomass"
+      )) {
+
+    selected <-
+      landisR_run_pick_state_file(
+        run,
+        type = "snapshot",
+        year = year
+      )
+
+    snapshot <-
+      landisR_validate_snapshot_object(
+        readRDS(
+          selected$path
+        ),
+        selected$path
+      )
+
+    if (identical(
+          representation,
+          "compact"
+        )) {
+
+      if (!is.null(
+            cells
+          )) {
+        landisR_stop(
+          "cells n'est pas utilise avec representation='compact'."
+        )
+      }
+
+      return(
+        snapshot
+      )
+    }
+
+    active_ids <-
+      as.integer(
+        snapshot$cell_id
+      )
+
+    if (is.null(
+          cells
+        )) {
+      selected_ids <-
+        active_ids
+    } else {
+      selected_ids <-
+        unique(
+          as.integer(
+            cells
+          )
+        )
+
+      if (anyNA(
+            selected_ids
+          ) ||
+          any(
+            !selected_ids %in%
+              active_ids
+          )) {
+        landisR_stop(
+          "cells contient une cellule absente ou inactive."
+        )
+      }
+    }
+
+    position <-
+      match(
+        selected_ids,
+        active_ids
+      )
+
+    state_id <-
+      as.integer(
+        snapshot$state_id[
+          position
+        ]
+      )
+
+    biomass <-
+      snapshot$state_biomass[
+        state_id,
+        ,
+        drop = FALSE
+      ]
+
+    if (is.null(
+          colnames(
+            biomass
+          )
+        ) &&
+        !is.null(
+          snapshot$species
+        )) {
+      colnames(
+        biomass
+      ) <-
+        as.character(
+          snapshot$species
+        )
+    }
+
+    ctx <-
+      landisR_load_run_context(
+        run
+      )
+
+    metadata <-
+      landisR_context_cell_metadata(
+        ctx,
+        selected_ids
+      )
+
+    out <-
+      data.frame(
+        metadata,
+        biomass,
+        TotalBiomass =
+          snapshot$state_total_biomass[
+            state_id
+          ],
+        AGE_MAX =
+          snapshot$state_max_age[
+            state_id
+          ],
+        check.names = FALSE,
+        stringsAsFactors = FALSE
+      )
+
+    rownames(
+      out
+    ) <-
+      NULL
+
+    attr(
+      out,
+      "year"
+    ) <-
+      selected$year
+
+    attr(
+      out,
+      "source_file"
+    ) <-
+      selected$path
+
+    return(
+      out
+    )
+  }
+
+  selected <-
+    landisR_run_pick_state_file(
+      run,
+      type = "checkpoint",
+      year = year
+    )
+
+  checkpoint <-
+    readRDS(
+      selected$path
+    )
+
+  if (!is.list(
+        checkpoint
+      ) ||
+      is.null(
+        checkpoint$format
+      ) ||
+      !grepl(
+        "^landisR52/state-checkpoint-v",
+        checkpoint$format
+      ) ||
+      is.null(
+        checkpoint$states
+      ) ||
+      is.null(
+        checkpoint$cell_state
+      )) {
+    landisR_stop(
+      "Checkpoint landisR invalide : ",
+      selected$path
+    )
+  }
+
+  ctx <-
+    landisR_load_run_context(
+      run
+    )
+
+  active_ids <-
+    as.integer(
+      ctx$ids
+    )
+
+  if (is.null(
+        cells
+      )) {
+    selected_ids <-
+      active_ids
+  } else {
+    selected_ids <-
+      unique(
+        as.integer(
+          cells
+        )
+      )
+
+    if (anyNA(
+          selected_ids
+        ) ||
+        any(
+          !selected_ids %in%
+            active_ids
+        )) {
+      landisR_stop(
+        "cells contient une cellule absente ou inactive."
+      )
+    }
+  }
+
+  if (length(
+        selected_ids
+      ) >
+      100000L) {
+    warning(
+      "Expansion de plus de 100 000 cellules en cohortes. ",
+      "Cette representation peut etre volumineuse.",
+      call. = FALSE
+    )
+  }
+
+  position <-
+    match(
+      selected_ids,
+      active_ids
+    )
+
+  landisR_load_engine()
+
+  if (exists(
+        "bs52_large_init_bulk52",
+        mode = "function"
+      )) {
+    bs52_large_init_bulk52()
+  }
+
+  states <-
+    bs52_csr_to_states_cpp(
+      checkpoint$states,
+      as.character(
+        ctx$config$species$species
+      )
+    )
+
+  metadata <-
+    landisR_context_cell_metadata(
+      ctx,
+      selected_ids
+    )
+
+  pieces <-
+    lapply(
+      seq_along(
+        selected_ids
+      ),
+      function(i) {
+
+        state_id <-
+          as.integer(
+            checkpoint$cell_state[
+              position[i]]
+          )
+
+        x <-
+          states[[state_id]]
+
+        if (!nrow(
+              x
+            )) {
+          return(
+            NULL
+          )
+        }
+
+        data.frame(
+          cell_id =
+            rep(
+              metadata$cell_id[i],
+              nrow(
+                x
+              )
+            ),
+          row =
+            rep(
+              metadata$row[i],
+              nrow(
+                x
+              )
+            ),
+          col =
+            rep(
+              metadata$col[i],
+              nrow(
+                x
+              )
+            ),
+          ecoregion =
+            rep(
+              metadata$ecoregion[i],
+              nrow(
+                x
+              )
+            ),
+          species =
+            as.character(
+              x$species
+            ),
+          age =
+            as.numeric(
+              x$age
+            ),
+          biomass =
+            as.numeric(
+              x$biomass
+            ),
+          stringsAsFactors = FALSE
+        )
+      }
+    )
+
+  pieces <-
+    pieces[
+      !vapply(
+        pieces,
+        is.null,
+        logical(
+          1
+        )
+      )
+    ]
+
+  if (!length(
+        pieces
+      )) {
+    out <-
+      data.frame(
+        cell_id = integer(),
+        row = integer(),
+        col = integer(),
+        ecoregion = character(),
+        species = character(),
+        age = numeric(),
+        biomass = numeric(),
+        stringsAsFactors = FALSE
+      )
+  } else {
+    out <-
+      do.call(
+        rbind,
+        pieces
+      )
+
+    rownames(
+      out
+    ) <-
+      NULL
+  }
+
+  attr(
+    out,
+    "year"
+  ) <-
+    selected$year
+
+  attr(
+    out,
+    "source_file"
+  ) <-
+    selected$path
+
+  out
+}
+
 landis_state <- function(
     simulation,
     representation = c(
@@ -660,17 +1756,58 @@ landis_state <- function(
       "cohorts",
       "biomass"
     ),
-    cells = NULL) {
+    cells = NULL,
+    year = NULL) {
+
+  representation <-
+    match.arg(
+      representation
+    )
+
+  if (inherits(
+        simulation,
+        "landisR_run"
+      )) {
+    return(
+      landisR_state_run(
+        simulation,
+        representation = representation,
+        cells = cells,
+        year = year
+      )
+    )
+  }
 
   simulation <-
     landisR_validate_simulation(
       simulation
     )
 
-  representation <-
-    match.arg(
-      representation
-    )
+  if (!is.null(
+        year
+      )) {
+    year <-
+      landisR_scalar_integer(
+        year,
+        "year",
+        0L
+      )
+
+    if (!identical(
+          as.integer(
+            year
+          ),
+          as.integer(
+            simulation$year
+          )
+        )) {
+      landisR_stop(
+        "Pour un landisR_simulation en memoire, year doit etre NULL ou egal a l'annee courante (",
+        simulation$year,
+        ")."
+      )
+    }
+  }
 
   if (identical(
         representation,
@@ -2268,3 +3405,126 @@ landis_apply <- function(
 
   simulation
 }
+
+# >>> FIX 107: context-cache wrapper support >>>
+# ==============================================================================
+# FIX 107 - landis_state() support for production context-cache wrapper
+#
+# Production landisR stores context.rds as:
+#   list(
+#     format = "landisR52/context-cache-v1",
+#     signature = ...,
+#     context = <actual context>
+#   )
+#
+# landis_state() initially assumed context.rds contained the actual context
+# directly. This helper accepts both representations.
+# ==============================================================================
+
+landisR_load_run_context <- function(run) {
+
+  context_candidates <-
+    landisR_run_context_candidates(
+      run
+    )
+
+  existing_context <-
+    context_candidates[
+      file.exists(
+        context_candidates
+      )
+    ]
+
+  if (length(
+        existing_context
+      )) {
+
+    cached <-
+      readRDS(
+        existing_context[1L]
+      )
+
+    # Current production cache: wrapper around the actual context.
+    if (is.list(
+          cached
+        ) &&
+        !is.null(
+          cached$format
+        ) &&
+        grepl(
+          "^landisR52/context-cache-v",
+          as.character(
+            cached$format
+          )
+        ) &&
+        is.list(
+          cached$context
+        )) {
+
+      ctx <-
+        cached$context
+
+    } else {
+
+      # Backward compatibility with older/direct context caches.
+      ctx <-
+        cached
+    }
+
+    if (!is.list(
+          ctx
+        ) ||
+        is.null(
+          ctx$ids
+        ) ||
+        is.null(
+          ctx$config
+        )) {
+      landisR_stop(
+        "Le cache de contexte landisR est invalide : ",
+        existing_context[1L]
+      )
+    }
+
+    return(
+      ctx
+    )
+  }
+
+  canonical_candidates <-
+    landisR_run_canonical_candidates(
+      run,
+      context_candidates
+    )
+
+  existing_canonical <-
+    canonical_candidates[
+      dir.exists(
+        canonical_candidates
+      )
+    ]
+
+  if (length(
+        existing_canonical
+      )) {
+
+    landisR_load_engine()
+
+    canonical <-
+      bs52_read_canonical52(
+        existing_canonical[1L]
+      )
+
+    return(
+      bs52_large_context52(
+        canonical
+      )
+    )
+  }
+
+  landisR_stop(
+    "Impossible de retrouver le contexte de la simulation. ",
+    "Le cache context.rds et les entrees canoniques sont absents."
+  )
+}
+# <<< FIX 107: context-cache wrapper support <<<

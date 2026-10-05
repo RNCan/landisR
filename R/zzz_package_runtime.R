@@ -1,11 +1,10 @@
 # ============================================================================
-# Installed-package runtime bridge for landisR beta.2.
-# No scientific equation is implemented here.
+# Installed-package runtime bridge.
+# This file intentionally overrides development-only sourceCpp loaders.
 # ============================================================================
 
 bs52_package_cpp_loaded52 <- function(functions) {
   ns <- environment(bs52_package_cpp_loaded52)
-
   all(vapply(
     functions,
     function(name) {
@@ -30,7 +29,6 @@ bs52_init_rcpp <- function(cache_dir = NULL) {
 
   if (!bs52_package_cpp_loaded52(required_functions)) {
     ns <- environment(bs52_init_rcpp)
-
     missing <- required_functions[!vapply(
       required_functions,
       function(name) {
@@ -38,7 +36,6 @@ bs52_init_rcpp <- function(cache_dir = NULL) {
       },
       logical(1)
     )]
-
     stop(
       "Exports C++ du package landisR absents : ",
       paste(missing, collapse = ", "),
@@ -69,7 +66,6 @@ bs52_large_init_bulk52 <- function() {
   )
 
   ns <- environment(bs52_large_init_bulk52)
-
   loaded <- vapply(
     required_functions,
     function(name) {
@@ -105,9 +101,6 @@ bs52_large_code_fingerprint52 <- function() {
   )
 }
 
-# Dead pools are deliberately outside the validated beta scope. Defining
-# explicit stubs keeps unsupported historical code paths from appearing as
-# unresolved functions during package checking.
 bs52_dead_unsupported52 <- function(...) {
   stop(
     "Dead biomass pools are outside the validated landisR beta.2 scope.",

@@ -18,7 +18,7 @@ landis_step(simulation, steps = 1L)
 
 landis_state(simulation,
   representation = c("compact", "cohorts", "biomass"),
-  cells = NULL)
+  cells = NULL, year = NULL)
 
 landis_update(project = NULL, canonical = NULL, landscape = NULL,
   species = NULL, species_parameters = NULL, ecoregions = NULL,
@@ -55,6 +55,7 @@ validation.
   \item{steps}{Number of succession timesteps to advance.}
   \item{representation}{State representation to return.}
   \item{cells}{Optional active cell identifiers for expanded state output.}
+  \item{year}{Simulation year to retrieve. For a saved \code{landisR_run}, the requested year must correspond to a compatible saved snapshot or checkpoint; \code{NULL} uses the current or latest compatible state.}
   \item{canonical}{Complete canonical object or a function modifying one.}
   \item{landscape}{Replacement canonical landscape cell table.}
   \item{species}{Replacement species table with the same species registry.}
