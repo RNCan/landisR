@@ -1,0 +1,13 @@
+"metric","value"
+"n_seeds",20
+"initial_exact_fraction",1
+"species_year_rows",51
+"species_year_practical_pass_fraction",0.92156862745098
+"species_year_median_abs_SMD",0.00751275170158608
+"species_year_max_abs_SMD",0.448423889961929
+"species_year_median_spatial_correlation",0.999916704057116
+"species_year_min_spatial_correlation",0.988382724978893
+"total_biomass_max_abs_bias_pct",0.0340379647196096
+"total_biomass_max_abs_SMD",0.143168292219445
+"total_biomass_min_spatial_correlation",0.998991581354796
+"AGE_MAX_exact_ensemble_means",1

@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+title: "landisR"
+type: software
+version: "0.1.0-beta.2"
+authors:
+  - family-names: "Boulanger"
+    given-names: "Yan"
+    email: "yan.boulanger@rncan-nrcan.gc.ca"
+    orcid: "https://orcid.org/0000-0001-6181-8509"
+    affiliation: "Natural Resources Canada"
+repository-code: "https://github.com/RNCan/landisR"
+url: "https://github.com/RNCan/landisR"

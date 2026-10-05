@@ -1,0 +1,8 @@
+"test","pass"
+"interactive_30y_exact",TRUE
+"interactive_rng_exact",TRUE
+"noop_refeed_30y_exact",TRUE
+"noop_refeed_rng_exact",TRUE
+"dynamic_update_preserves_current_state",TRUE
+"cohort_intervention_changes_target",TRUE
+"cohort_intervention_preserves_other_cell",TRUE

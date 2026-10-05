@@ -1,0 +1,161 @@
+---
+title: "Generic processes, modifiers, and extensions"
+author: "landisR development team"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Generic processes, modifiers, and extensions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+# The coupling contract
+
+External models communicate with `landisR` through `landis_update()` and
+`landis_apply()`.
+
+A modifier is optional. A complete disturbance extension can generate the same
+update directly.
+
+# Discover capabilities
+
+```{r capabilities}
+caps <- landis_capabilities(sim)
+
+caps
+
+landis_supports(
+  caps,
+  c(
+    "state.cohorts",
+    "update.cohorts"
+  )
+)
+```
+
+Capabilities make engine-specific assumptions explicit.
+
+For example, the current Biomass 5.2 engine advertises
+`engine_input.sep`, whereas a future growth engine does not have to.
+
+# A lightweight modifier
+
+```{r modifier}
+biotic_process <- landis_modifier(
+  name = "biotic_process",
+  state = "biomass",
+  scope = "cell",
+  requires = c(
+    "state.biomass",
+    "update.dynamic",
+    "engine_input.sep"
+  ),
+  fun = function(state, inputs, context) {
+
+    new_dynamic <- inputs$dynamic
+
+    # User-defined scientific logic.
+    # Nothing in landisR assumes that this is competition,
+    # facilitation, fire, or any other specific process.
+
+    landis_update(
+      dynamic = new_dynamic,
+      dynamic_mode = "replace"
+    )
+  }
+)
+
+sim <- landis_apply(
+  sim,
+  biotic_process
+)
+```
+
+# Conditional no-op
+
+A modifier can return `NULL` when nothing happens.
+
+```{r no-op}
+conditional_process <- landis_modifier(
+  name = "conditional_process",
+  state = "compact",
+  fun = function(context) {
+
+    if (context$year < 50) {
+      return(NULL)
+    }
+
+    landis_update(
+      metadata = list(
+        triggered = TRUE
+      )
+    )
+  }
+)
+```
+
+# A full extension without landis_modifier()
+
+A disturbance package does not need the modifier wrapper.
+
+```{r extension}
+result <- myFirePackage::run(
+  model = fire_model,
+  forest = landis_state(
+    sim,
+    representation = "cohorts"
+  ),
+  landscape = sim$project$canonical$landscape$cells,
+  year = sim$year
+)
+
+sim <- landis_apply(
+  sim,
+  result
+)
+```
+
+The extension only needs to return a valid `landis_update`.
+
+# A plain function also works
+
+```{r plain-function}
+external_process <- function(simulation) {
+
+  forest <- landis_state(
+    simulation,
+    representation = "cohorts",
+    cells = selected_cells
+  )
+
+  # Arbitrary external calculations.
+
+  landis_update(
+    cohorts = forest
+  )
+}
+
+sim <- landis_apply(
+  sim,
+  external_process
+)
+```
+
+# Why this matters for future growth engines
+
+The public coupling contract is not tied to Biomass Succession 5.2.
+
+A future PnET-style engine can advertise a different capability set while fire,
+harvest, insects, or other models continue communicating through
+`landis_update()`.

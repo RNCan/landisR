@@ -1,0 +1,26 @@
+Package: landisR
+Type: Package
+Title: Spatial Forest Succession and Model Coupling Framework
+Version: 0.1.0.9002
+Authors@R: c(person(given = "Yan", family = "Boulanger", email = "yan.boulanger@rncan-nrcan.gc.ca", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-6181-8509")),
+    person(given = "Natural Resources Canada", role = "cph"))
+Description: A spatial forest succession framework implemented in R and Rcpp. Its first validated growth engine closely follows the living-biomass dynamics of LANDIS-II
+    Biomass Succession 5.2 while providing an interactive timestep-based interface for coupling succession with external disturbance, management, climate, ecological,
+    and other models. The architecture supports direct state and input updates, integration with existing R tools, and future additional growth engines and model
+    extensions.
+License: file LICENSE
+Encoding: UTF-8
+LazyData: false
+Depends: R (>= 4.3.0)
+Imports: Rcpp
+LinkingTo: Rcpp
+Suggests: terra, testthat (>= 3.0.0), knitr, rmarkdown
+Config/testthat/edition: 3
+NeedsCompilation: yes
+Collate: 'biomass52.R' 'explicit_initial52.R' 'spinup52.R' 'fast52.R' 'rcpp52.R' 'simulation52.R' 'ward52.R' 'canonical52.R' 'climate52.R' 'production52.R'
+    'read_landis52.R' 'import_landis52.R' 'large52.R' 'project_api.R' 'interactive_api.R' 'coupling_api.R' 'RcppExports.R' 'zzz_package_runtime.R'
+VignetteBuilder: knitr
+Author: Yan Boulanger [aut, cre] (ORCID: <https://orcid.org/0000-0001-6181-8509>), Natural Resources Canada [cph]
+Maintainer: Yan Boulanger <yan.boulanger@rncan-nrcan.gc.ca>
+URL: https://github.com/RNCan/landisR
+BugReports: https://github.com/RNCan/landisR/issues

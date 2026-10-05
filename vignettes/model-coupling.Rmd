@@ -1,0 +1,242 @@
+---
+title: "Coupling external models with landisR"
+author: "landisR development team"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Coupling external models with landisR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+# Why an interactive API?
+
+A central design goal of `landisR` is to allow a succession simulation to
+exchange information with other models between timesteps.
+
+The scientific succession kernel remains unchanged. The orchestration layer
+exposes the current state, accepts compatible modifications, rebuilds the
+required context, and continues the simulation.
+
+# Initialize and advance one timestep
+
+```{r initialize}
+library(landisR)
+
+project <- landis_from_canonical(
+  "inputs_R/my_project"
+)
+
+sim <- landis_initialize(
+  project,
+  seed = 4357
+)
+
+sim <- landis_step(
+  sim
+)
+
+sim
+```
+
+# Inspect the current forest
+
+For a few cells, the cohort representation is easiest to use:
+
+```{r inspect-cohorts}
+forest <- landis_state(
+  sim,
+  representation = "cohorts",
+  cells = c(101, 102, 103)
+)
+
+forest
+```
+
+For large landscapes, use the compact or biomass representation:
+
+```{r inspect-compact}
+compact <- landis_state(
+  sim,
+  representation = "compact"
+)
+
+biomass <- landis_state(
+  sim,
+  representation = "biomass"
+)
+```
+
+# Apply a disturbance
+
+An external fire model could return a new living cohort table.
+
+```{r fire}
+burned_cells <- c(101, 102, 103)
+
+forest <- landis_state(
+  sim,
+  representation = "cohorts",
+  cells = burned_cells
+)
+
+forest$biomass <- floor(
+  forest$biomass * 0.25
+)
+
+sim <- landis_apply(
+  sim,
+  landis_update(
+    cohorts = forest,
+    clear_cells = burned_cells,
+    metadata = list(
+      source = "example_fire_model",
+      description = "75 percent biomass mortality"
+    )
+  )
+)
+```
+
+Cells with complete mortality can be listed in `clear_cells` without providing
+replacement cohort rows.
+
+# Change climate-sensitive succession inputs
+
+```{r dynamic}
+new_dynamic <- project$canonical$dynamic
+
+new_dynamic$sep <- pmax(
+  0,
+  new_dynamic$sep * 0.8
+)
+
+sim <- landis_apply(
+  sim,
+  landis_update(
+    dynamic = new_dynamic,
+    dynamic_mode = "replace",
+    metadata = list(
+      source = "external_climate_model"
+    )
+  )
+)
+```
+
+The current forest is preserved. The new parameters affect subsequent
+`landis_step()` calls.
+
+# Use an arbitrary canonical modifier
+
+For advanced coupling, a function can modify the canonical project directly:
+
+```{r canonical-modifier}
+sim <- landis_apply(
+  sim,
+  landis_update(
+    canonical = function(x) {
+
+      x$species_parameters <- my_parameter_model(
+        x$species_parameters
+      )
+
+      x$landscape$cells <- my_ecoregion_model(
+        x$landscape$cells
+      )
+
+      x
+    }
+  )
+)
+```
+
+The result is validated before the simulation is allowed to continue.
+
+# Continue the simulation
+
+```{r continue}
+sim <- landis_step(
+  sim
+)
+
+sim <- landis_step(
+  sim
+)
+```
+
+The Biomass Succession RNG state is carried across the steps. External models
+should use independent RNG streams when stochastic coupling is required.
+
+# A coupled simulation loop
+
+```{r loop}
+sim <- landis_initialize(
+  project,
+  seed = 4357
+)
+
+while (sim$year < 300) {
+
+  sim <- landis_step(
+    sim
+  )
+
+  fire_update <- fire_model(
+    landis_state(
+      sim,
+      representation = "biomass"
+    ),
+    year = sim$year
+  )
+
+  sim <- landis_apply(
+    sim,
+    fire_update
+  )
+
+  harvest_update <- harvest_model(
+    landis_state(
+      sim,
+      representation = "cohorts"
+    ),
+    year = sim$year
+  )
+
+  sim <- landis_apply(
+    sim,
+    harvest_update
+  )
+}
+```
+
+An external model does not need to know how the internal CSR state is stored.
+
+# Growth engines
+
+The first supported growth engine is:
+
+```{r engine}
+engine <- landis_growth_biomass52()
+
+engine
+```
+
+The orchestration API is intentionally separate from Biomass Succession so that
+future growth engines can be introduced without redesigning fire, harvest,
+climate or other coupling interfaces.
+
+A future PnET-style engine would probably retain additional internal state and
+could operate at a finer temporal resolution internally. It would still expose
+a common forest state to external models whenever possible.
+
+The current beta does not implement PnET or custom growth engines.

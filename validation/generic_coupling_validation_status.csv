@@ -1,0 +1,11 @@
+"test","pass"
+"capability_registry",TRUE
+"modifier_noop_30y_exact",TRUE
+"modifier_noop_rng_exact",TRUE
+"plain_extension_without_modifier_exact",TRUE
+"plain_extension_without_modifier_rng_exact",TRUE
+"missing_capability_rejected",TRUE
+"modifier_state_and_context_delivery",TRUE
+"modifier_dynamic_preserves_current_state",TRUE
+"modifier_dynamic_preserves_rng",TRUE
+"modifier_dynamic_update_applied",TRUE

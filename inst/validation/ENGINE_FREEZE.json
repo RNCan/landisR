@@ -1,0 +1,32 @@
+{
+  "beta_version": "0.1.0-beta.1",
+  "freeze_date": "2026-10-03",
+  "engine": {
+    "growth": "frozen v3.8 living-biomass logic",
+    "ward": "v3.11-ward-interior-fastpath",
+    "outputs": "compact RDS, gzip level 1",
+    "context_cache": "v3.13",
+    "dead_pools": "out of scope",
+    "internal_parallelism": false
+  },
+  "benchmark_6est_40y": {
+    "active_cells": 1650619,
+    "final_states": 1092532,
+    "canonical_read_minutes": 0.07,
+    "context_minutes": 0.04,
+    "simulation_minutes": 2.48,
+    "total_minutes": 2.67,
+    "growth_seconds": 52.28,
+    "ward_seconds": 32.85,
+    "rng_seconds": 6.37,
+    "rebuild_seconds": 3.6,
+    "core_seconds": 95.1,
+    "snapshots_checkpoints_seconds": 34.13,
+    "wall_clock_seconds": 160.3,
+    "wall_clock_reduction_vs_v3_12_percent": 29.6
+  },
+  "checksums": {
+    "R/large52.R": "50bc3d5a349a65f5af3b3214f6bc34d0b3bd989bd1d2fb50062b886d6b584dfd",
+    "src/growth52.cpp": "0385fc4da206132c7493affd1d1e5ca1afec6ace2c8889ad356ad0f1588d319d"
+  }
+}

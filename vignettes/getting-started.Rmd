@@ -1,0 +1,481 @@
+---
+title: "Getting started with landisR"
+author: "landisR development team"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Getting started with landisR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+
+# Overview
+
+`landisR` is a standalone R/Rcpp implementation of the living-biomass
+succession processes validated against LANDIS-II Biomass Succession.
+
+LANDIS-II is optional. A `landisR` project can be created in three ways:
+
+```text
+LANDIS-II inputs ---- landis_read() -----------\
+R-native tables ----- landis_build() ------------> landisR_project -> landis_run()
+canonical inputs ---- landis_from_canonical() ---/
+```
+
+All three routes converge to the same canonical project representation before
+the scientific engine is called.
+
+The beta.2 scientific scope includes living biomass, Ward seed dispersal,
+stochastic establishment, compact RDS outputs, and direct comparison with
+LANDIS-II outputs.
+
+Dead biomass pools are outside the validated beta scope.
+
+# Installation
+
+Install the source package with:
+
+```{r install}
+install.packages(
+  "landisR_0.1.0.9002.tar.gz",
+  repos = NULL,
+  type = "source"
+)
+```
+
+Then load it:
+
+```{r load}
+library(landisR)
+```
+
+On Windows, installing from source requires a working Rtools toolchain because
+the package contains compiled C++ code.
+
+# Creating a project
+
+## Route 1: existing LANDIS-II project
+
+If you already have a LANDIS-II scenario, use `landis_read()`:
+
+```{r landis-read}
+project <- landis_read(
+  "D:/LANDIS/my_project",
+  scenario = "scenario.txt"
+)
+
+print(project)
+```
+
+`landis_read()` does not run LANDIS-II. It parses the supported LANDIS-II input
+files and converts them to the native `landisR` canonical representation.
+
+This route is useful when you want to:
+
+- reproduce an existing LANDIS-II Biomass Succession scenario in `landisR`;
+- compare `landisR` and LANDIS-II outputs;
+- migrate an existing project toward a more flexible R workflow.
+
+## Route 2: R-native inputs
+
+LANDIS-II files are not required. A project can be built directly from R
+objects:
+
+```{r landis-build}
+project <- landis_build(
+  landscape = landscape,
+  species = species,
+  species_parameters = species_parameters,
+  ecoregions = ecoregions,
+  ecoregion_parameters = ecoregion_parameters,
+  dynamic = dynamic,
+  initial_cohorts = initial_cohorts,
+  shade = shade,
+  light = light,
+  fire_reductions = fire_reductions,
+  duration = 300,
+  cell_length = 250,
+  timestep = 10,
+  initial_mode = "explicit_biomass",
+  name = "experimental_landscape"
+)
+```
+
+This route is intended for:
+
+- synthetic landscapes;
+- experimental designs;
+- inputs generated from GIS workflows;
+- outputs from other ecological models;
+- future coupling with disturbance or management models;
+- projects that have never been processed by LANDIS-II.
+
+For the exact validated column names and R classes, see
+`INPUT_SCHEMA_VALIDATED_5KM.md` in the installed package documentation.
+
+## Route 3: canonical inputs
+
+An existing canonical landisR project can be loaded directly:
+
+```{r canonical}
+project <- landis_from_canonical(
+  "inputs_R/my_project",
+  name = "my_project"
+)
+```
+
+Advanced users can also provide an already prepared canonical R list.
+
+# Required R-native inputs
+
+The most important input tables are summarized below.
+
+## Landscape
+
+The landscape table must contain the complete rectangular grid, including
+inactive cells.
+
+Required columns are:
+
+```text
+cell_id
+row
+col
+ecoregion_map_code
+ecoregion
+active
+community
+```
+
+The validated indexing rule is:
+
+```{r cell-id}
+cell_id <- row + (col - 1L) * nrow
+```
+
+Active cells must reference a known ecoregion and a valid initial community.
+Inactive cells use `community = 0`.
+
+## Initial cohorts
+
+For the validated `explicit_biomass` route:
+
+```text
+map_code
+species
+age
+biomass
+```
+
+Each `(map_code, species, age)` combination must be unique.
+
+Age must be at least 1 year and biomass must be finite and non-negative.
+
+## Dynamic succession parameters
+
+The dynamic table uses:
+
+```text
+year
+ecoregion
+species
+sep
+max_anpp
+max_biomass
+```
+
+Each `(year, ecoregion, species)` combination must be unique.
+
+`sep` is the establishment parameter. In the validated beta input validator it
+must be between 0 and 1.
+
+## Other ecological tables
+
+`landis_build()` also requires:
+
+```text
+species
+species_parameters
+ecoregions
+ecoregion_parameters
+shade
+light
+fire_reductions
+```
+
+The exact current schemas are documented in
+`INPUT_SCHEMA_VALIDATED_5KM.md`, which is generated directly from the
+scientifically validated 5 x 5 km reference rather than copied manually.
+
+# Running a simulation
+
+A simulation is started with `landis_run()`:
+
+```{r run}
+sim <- landis_run(
+  project = project,
+  duration = 30,
+  seed = 4357,
+  output_directory = "outputs/my_run"
+)
+
+print(sim)
+```
+
+You can select output years explicitly:
+
+```{r output-years}
+sim <- landis_run(
+  project = project,
+  duration = 30,
+  seed = 4357,
+  output_years = c(0, 10, 20, 30),
+  output_directory = "outputs/my_run"
+)
+```
+
+The validated public beta uses:
+
+```{r ward}
+sim <- landis_run(
+  project = project,
+  duration = 30,
+  seed = 4357,
+  dispersal = "ward",
+  ward_variant = "ward2019",
+  output_directory = "outputs/my_run"
+)
+```
+
+# Outputs
+
+The native production format is compact RDS output rather than GeoTIFF.
+
+A typical run contains:
+
+```text
+outputs/my_run/
+  snapshots/
+    snapshot_000.rds
+    snapshot_010.rds
+    ...
+  checkpoints/
+    ...
+  biomass_summary.csv
+  performance_profile.csv
+```
+
+A compact snapshot stores the state of active cells using state compression,
+including species biomass, total biomass, maximum age, and ecoregion context.
+
+This design avoids the large I/O cost of writing many TIFF files during every
+simulation. Raster export can be done later as a post-processing step when
+needed.
+
+# Climate-sensitive inputs
+
+Dynamic parameters can vary by year, ecoregion, and species.
+
+A project can use the dynamic table already stored in its inputs:
+
+```{r baseline}
+sim <- landis_run(
+  project,
+  duration = 130,
+  seed = 4357,
+  output_directory = "outputs/baseline"
+)
+```
+
+The public API also exposes a climate configuration argument for workflows that
+replace the dynamic parameter table.
+
+Climate tables should preserve the same canonical schema and cover all required
+species and active ecoregions for the requested simulation period.
+
+# Comparing with LANDIS-II
+
+If an equivalent LANDIS-II simulation already exists, use `landis_compare()`:
+
+```{r compare}
+comparison <- landis_compare(
+  run = sim,
+  landis_outputs = "D:/LANDIS/reference_run",
+  project = project,
+  years = c(0, 10, 20, 30)
+)
+
+print(comparison)
+```
+
+The comparison can evaluate:
+
+- biomass by species;
+- `TotalBiomass`;
+- `AGE-MAX`;
+- cell-level differences;
+- spatial correlation.
+
+LANDIS-II validation TIFFs may be vertically mirrored and may not contain useful
+georeferencing. With `orientation = "auto"`, `landis_compare()` tests the
+year-zero state and selects the orientation that reproduces the initial state
+exactly.
+
+The optional package `terra` is required for this comparison workflow.
+
+# Random seeds and stochastic equivalence
+
+`landisR` uses its own R random-number stream.
+
+A numeric seed such as:
+
+```{r seed}
+seed <- 4357
+```
+
+makes a `landisR` run reproducible, but the same numeric seed in LANDIS-II does
+not imply the same random-number sequence across the two software engines.
+
+For this reason:
+
+- deterministic processes were validated by disabling recruitment and requiring
+  exact cell-level equality;
+- stochastic recruitment was validated using distributions from 20 independent
+  replicates in each engine.
+
+The beta validation supports stochastic equivalence at the ensemble level.
+
+# Scientific validation of beta.2
+
+The deterministic external validation against LANDIS-II used a 5 x 5 km
+landscape with 396 active cells.
+
+Recruitment was disabled by setting SEP to zero in both engines.
+
+The result was:
+
+```text
+76 / 76 comparisons EXACT
+```
+
+This included 17 species, `TotalBiomass`, and `AGE-MAX` at years 0, 10, 20,
+and 30.
+
+The stochastic ensemble validation used 20 independent replicates in each
+engine.
+
+Summary:
+
+```text
+Initial state              380 / 380 EXACT
+Species SMD                 51 / 51 within diagnostic band
+Species occupancy           51 / 51 within diagnostic band
+Spatial structure           51 / 51 within diagnostic band
+Brown-Forsythe p < 0.05      0 / 51
+Brown-Forsythe BH < 0.05     0 / 51
+TotalBiomass                PASS at all evaluated years
+AGE-MAX                     EXACT
+```
+
+The installable R package also reproduced the validated development beta
+exactly in the package smoke test.
+
+# Current beta scope
+
+The following functionality is part of the validated beta scope:
+
+```text
+living biomass
+explicit initial biomass
+Ward 2019 seed dispersal
+stochastic establishment
+climate-sensitive dynamic parameters
+compact RDS snapshots/checkpoints
+LANDIS-II input adapter
+R-native input construction
+LANDIS-II output comparison
+no internal parallelism
+```
+
+The following are not yet part of the validated public beta:
+
+```text
+dead biomass pools
+public disturbance-extension API
+fully validated age-spinup workflow
+automatic GeoTIFF production during simulation
+```
+
+The source code may contain historical development pathways related to some of
+these features, but they should not be interpreted as supported public API.
+
+# Reproducible project structure
+
+A practical research project can be organized as:
+
+```text
+my_project/
+  inputs/
+  scripts/
+  outputs/
+  comparisons/
+```
+
+For LANDIS-independent workflows, the input tables can be generated entirely in
+R and saved with `landis_write_canonical()`:
+
+```{r write-canonical}
+landis_write_canonical(
+  project,
+  "inputs/canonical",
+  overwrite = TRUE
+)
+```
+
+The canonical representation can then be reused for multiple simulations and
+climate scenarios.
+
+# Finding the complete documentation
+
+After installation:
+
+```{r docs}
+system.file(
+  "doc",
+  package = "landisR"
+)
+```
+
+The package documentation includes:
+
+```text
+QUICK_START.md
+INPUTS.md
+INPUT_SCHEMA_VALIDATED_5KM.md
+FUNCTION_REFERENCE.md
+VALIDATION.md
+```
+
+The main R help pages are:
+
+```{r help}
+?landisR
+?landis_read
+?landis_run
+?landis_compare
+```
+
+The public API intentionally remains small. Functions beginning with `bs52_`
+are internal implementation details and are not part of the supported user
+interface.

@@ -1,0 +1,6 @@
+^\.github$
+^validation$
+^CONTRIBUTING\.md$
+^RELEASE_CHECKLIST\.md$
+^CITATION\.cff$
+^PRIVATE_RELEASE_STATUS\.md$
