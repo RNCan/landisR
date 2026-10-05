@@ -20,3 +20,5 @@ landisR.Rcheck/
 *.tar.gz
 .DS_Store
 Thumbs.db
+
+cache/
