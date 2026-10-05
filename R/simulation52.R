@@ -48,6 +48,16 @@ bs52_establish <- function(cohorts, params, config, ecoregion, timestep,
   if (length(arrival) != nrow(params) || anyNA(arrival) ||
       any(!is.finite(arrival)) || any(arrival < 0 | arrival > 1))
     stop("Invalid seed probabilities")
+
+  # Strictly serotinous species cannot use ordinary sexual recruitment.
+  strict <- landisR_serotiny_strict_index(config$species)
+  if (length(strict)) {
+    strict_species <- as.character(config$species$species[strict])
+    strict_params <- match(strict_species, as.character(params$species))
+    strict_params <- strict_params[!is.na(strict_params)]
+    arrival[strict_params] <- 0
+  }
+
   probability <- probability * arrival
   recruited <- if (stochastic) runif(nrow(params)) < probability else probability > 0
   for (i in which(recruited)) {

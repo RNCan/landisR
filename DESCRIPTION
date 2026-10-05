@@ -42,6 +42,7 @@ Collate:
     'run_persistence.R'
     'project_api.R'
     'interactive_api.R'
+    'serotiny_api.R'
     'map_api.R'
     'coupling_api.R'
     'RcppExports.R'

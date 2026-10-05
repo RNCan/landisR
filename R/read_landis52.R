@@ -58,6 +58,7 @@ bs52_read_mauricie <- function(directory, scenario = "scenario.txt") {
       "effective_seed_distance", "max_seed_distance", "vegetative_probability",
       "min_sprout_age", "max_sprout_age", "post_fire_regeneration"))
   species$species <- as.character(species$species)
+  species <- landisR_normalize_serotiny_traits(species)
   eco <- bs52_table(bs52_lines(path(bs52_value(sc, "Ecoregions")))[-1],
                    c("active", "map_code", "ecoregion", "description"))
   sp <- bs52_table(bs52_section(main, "SpeciesParameters", "EcoregionParameters"),

@@ -221,6 +221,12 @@ bs52_ward_recruit_landscape_fast <- function(cohorts, ecoregion, config, year,
     }
   }
 
+  # Strictly serotinous species are excluded from the ordinary seeding pathway.
+  strict <- landisR_serotiny_strict_index(config$species)
+  if (length(strict)) {
+    arrival[, strict] <- 0
+  }
+
   eco_values <- unique(ecoregion[ids])
   params_by_eco <- lapply(eco_values, function(e)
     bs52_dynamic_at(config, year, e))

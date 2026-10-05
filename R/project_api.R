@@ -407,6 +407,11 @@ landisR_validate_canonical <- function(
     )
   }
 
+  canonical$species <-
+    landisR_normalize_serotiny_traits(
+      canonical$species
+    )
+
   canonical$ecoregions <-
     landisR_require_columns(
       canonical$ecoregions,

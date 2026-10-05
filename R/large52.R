@@ -1094,6 +1094,15 @@ bs52_large_grow_states52 <- function(states, state_eco, block_years,
     progress_label = progress_label
   )
 
+  base_probability <- out$base_probability
+
+  # Strictly serotinous species cannot recruit through the ordinary
+  # succession-step sexual reproduction pathway.
+  strict <- landisR_serotiny_strict_index(ctx$config$species)
+  if (length(strict)) {
+    base_probability[, strict] <- 0
+  }
+
   list(
     states = out$states,
     features = list(
@@ -1101,7 +1110,7 @@ bs52_large_grow_states52 <- function(states, state_eco, block_years,
       establishment_biomass = as.numeric(
         out$establishment_biomass
       ),
-      base_probability = out$base_probability
+      base_probability = base_probability
     ),
     ecology = ecology,
     fused = TRUE,
@@ -1211,7 +1220,8 @@ bs52_large_ecology_tables52 <- function(config, year, state_eco) {
 }
 
 bs52_large_state_features52 <- function(states, state_eco, config, year,
-                                        need_output_biomass = FALSE) {
+                                        need_output_biomass = FALSE,
+                                        regular_recruitment = TRUE) {
   species_names <- as.character(config$species$species)
   n_species <- length(species_names)
   n_states <- length(states)
@@ -1363,6 +1373,13 @@ bs52_large_state_features52 <- function(states, state_eco, config, year,
         p$sep * light
       )
     )
+  }
+
+  if (isTRUE(regular_recruitment)) {
+    strict <- landisR_serotiny_strict_index(config$species)
+    if (length(strict)) {
+      base_probability[, strict] <- 0
+    }
   }
 
   list(

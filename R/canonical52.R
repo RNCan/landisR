@@ -38,6 +38,7 @@ bs52_read_canonical52 <- function(directory) {
   root <- normalizePath(directory, winslash = "/", mustWork = TRUE)
   settings <- bs52_canonical_settings(root)
   species <- bs52_canonical_csv(root, "ecology", "species.csv")
+  species <- landisR_normalize_serotiny_traits(species)
   ecoregions <- bs52_canonical_csv(root, "ecology", "ecoregions.csv")
   species_parameters <- bs52_canonical_csv(root, "succession", "species_parameters.csv")
   ecoregion_parameters <- bs52_canonical_csv(root, "succession", "ecoregion_parameters.csv")
