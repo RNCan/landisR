@@ -7,9 +7,17 @@ Save the lightweight \code{landisR_run} object inside a simulation output
 folder and reload it later without rerunning the simulation.
 }
 \usage{
-landis_save_run(run, output_directory = NULL, filename = landisR_run_descriptor_filename())
+landis_save_run(
+  run,
+  output_directory = NULL,
+  filename = landisR_run_descriptor_filename()
+)
 
-landis_load_run(output_directory, filename = landisR_run_descriptor_filename(), check = TRUE)
+landis_load_run(
+  output_directory,
+  filename = landisR_run_descriptor_filename(),
+  check = TRUE
+)
 }
 \arguments{
   \item{run}{A \code{landisR_run} object returned by \code{landis_run()}.}

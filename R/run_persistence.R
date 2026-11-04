@@ -136,6 +136,7 @@ landisR_new_run_descriptor <- function(
 #' @param filename Descriptor filename. The default is landisR_run.rds.
 #'
 #' @return The descriptor path, invisibly.
+#' @noRd
 #' @export
 landis_save_run <- function(
     run,
@@ -289,6 +290,7 @@ landisR_rebase_context_cache <- function(run, output_directory) {
 #'   are absent.
 #'
 #' @return A landisR_run object.
+#' @noRd
 #' @export
 landis_load_run <- function(
     output_directory,

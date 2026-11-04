@@ -2,3 +2,6 @@
 ^CITATION\.cff$
 ^dev$
 ^docs$
+^CONTRIBUTING[.]md$
+^RELEASE_CHECKLIST[.]md$
+^validation$
