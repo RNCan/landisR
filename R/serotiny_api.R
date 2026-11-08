@@ -137,7 +137,7 @@ landisR_serotiny_rng_draw <- function(simulation, nrow, ncol) {
   list(simulation = simulation, draw = draw)
 }
 
-landisR_serotiny_prefire_sources <- function(simulation, cells) {
+.landisR_legacy_prefire_270F <- function(simulation, cells) {
   config <- simulation$ctx$config
   species <- landisR_normalize_serotiny_traits(config$species)
   sero <- which(species$serotiny_type != "none")
@@ -224,7 +224,7 @@ landisR_serotiny_arrival <- function(simulation, source_cells, species_row) {
   )
 }
 
-landisR_serotiny_recruit_after_fire <- function(simulation,
+.landisR_legacy_recruit_270F <- function(simulation,
                                                 prefire_sources,
                                                 stochastic = TRUE) {
   config <- simulation$ctx$config

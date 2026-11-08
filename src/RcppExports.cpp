@@ -10,6 +10,104 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// basefire_expand_cohorts_251
+Rcpp::DataFrame basefire_expand_cohorts_251(Rcpp::List states, Rcpp::IntegerVector cell_state, Rcpp::IntegerVector cell_ids, Rcpp::IntegerVector rows, Rcpp::IntegerVector cols, Rcpp::CharacterVector ecoregions);
+RcppExport SEXP _landisR_basefire_expand_cohorts_251(SEXP statesSEXP, SEXP cell_stateSEXP, SEXP cell_idsSEXP, SEXP rowsSEXP, SEXP colsSEXP, SEXP ecoregionsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type states(statesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type cell_state(cell_stateSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type cell_ids(cell_idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type rows(rowsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type cols(colsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type ecoregions(ecoregionsSEXP);
+    rcpp_result_gen = Rcpp::wrap(basefire_expand_cohorts_251(states, cell_state, cell_ids, rows, cols, ecoregions));
+    return rcpp_result_gen;
+END_RCPP
+}
+// basefire_prefire_csr_252
+Rcpp::List basefire_prefire_csr_252(Rcpp::List state_store, Rcpp::IntegerVector cell_state, Rcpp::IntegerVector active_positions, Rcpp::IntegerVector cell_ids, Rcpp::IntegerVector serotiny_species_1based, Rcpp::NumericVector maturity, int species_id_base);
+RcppExport SEXP _landisR_basefire_prefire_csr_252(SEXP state_storeSEXP, SEXP cell_stateSEXP, SEXP active_positionsSEXP, SEXP cell_idsSEXP, SEXP serotiny_species_1basedSEXP, SEXP maturitySEXP, SEXP species_id_baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type state_store(state_storeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type cell_state(cell_stateSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type active_positions(active_positionsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type cell_ids(cell_idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type serotiny_species_1based(serotiny_species_1basedSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type maturity(maturitySEXP);
+    Rcpp::traits::input_parameter< int >::type species_id_base(species_id_baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(basefire_prefire_csr_252(state_store, cell_state, active_positions, cell_ids, serotiny_species_1based, maturity, species_id_base));
+    return rcpp_result_gen;
+END_RCPP
+}
+// basefire_apply_csr_253
+Rcpp::List basefire_apply_csr_253(Rcpp::List old_store, Rcpp::IntegerVector old_state_eco, Rcpp::IntegerVector old_cell_state, Rcpp::IntegerVector active_ids, Rcpp::IntegerVector active_eco, Rcpp::DataFrame replacement, Rcpp::IntegerVector clear_cells, Rcpp::CharacterVector species_names, int species_base);
+RcppExport SEXP _landisR_basefire_apply_csr_253(SEXP old_storeSEXP, SEXP old_state_ecoSEXP, SEXP old_cell_stateSEXP, SEXP active_idsSEXP, SEXP active_ecoSEXP, SEXP replacementSEXP, SEXP clear_cellsSEXP, SEXP species_namesSEXP, SEXP species_baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type old_store(old_storeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type old_state_eco(old_state_ecoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type old_cell_state(old_cell_stateSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type active_ids(active_idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type active_eco(active_ecoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type replacement(replacementSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type clear_cells(clear_cellsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type species_names(species_namesSEXP);
+    Rcpp::traits::input_parameter< int >::type species_base(species_baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(basefire_apply_csr_253(old_store, old_state_eco, old_cell_state, active_ids, active_eco, replacement, clear_cells, species_names, species_base));
+    return rcpp_result_gen;
+END_RCPP
+}
+// basefire_csr_decode_states_255
+SEXP basefire_csr_decode_states_255(SEXP store_sexp, SEXP species_sexp, int species_base);
+RcppExport SEXP _landisR_basefire_csr_decode_states_255(SEXP store_sexpSEXP, SEXP species_sexpSEXP, SEXP species_baseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type store_sexp(store_sexpSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type species_sexp(species_sexpSEXP);
+    Rcpp::traits::input_parameter< int >::type species_base(species_baseSEXP);
+    rcpp_result_gen = Rcpp::wrap(basefire_csr_decode_states_255(store_sexp, species_sexp, species_base));
+    return rcpp_result_gen;
+END_RCPP
+}
+// basefire_serotiny_build_256
+Rcpp::List basefire_serotiny_build_256(Rcpp::List csr, Rcpp::IntegerVector cell_state, Rcpp::IntegerVector active_ids, Rcpp::IntegerVector active_eco, Rcpp::IntegerMatrix recruited_pairs, Rcpp::IntegerVector active_sero, Rcpp::CharacterVector species_names, Rcpp::NumericMatrix arrival, Rcpp::NumericMatrix probability, Rcpp::IntegerVector eco_keys, Rcpp::NumericMatrix anpp_by_eco, Rcpp::NumericVector ecomax_by_eco, int timestep);
+RcppExport SEXP _landisR_basefire_serotiny_build_256(SEXP csrSEXP, SEXP cell_stateSEXP, SEXP active_idsSEXP, SEXP active_ecoSEXP, SEXP recruited_pairsSEXP, SEXP active_seroSEXP, SEXP species_namesSEXP, SEXP arrivalSEXP, SEXP probabilitySEXP, SEXP eco_keysSEXP, SEXP anpp_by_ecoSEXP, SEXP ecomax_by_ecoSEXP, SEXP timestepSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type csr(csrSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type cell_state(cell_stateSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type active_ids(active_idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type active_eco(active_ecoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerMatrix >::type recruited_pairs(recruited_pairsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type active_sero(active_seroSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type species_names(species_namesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type arrival(arrivalSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type probability(probabilitySEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type eco_keys(eco_keysSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type anpp_by_eco(anpp_by_ecoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ecomax_by_eco(ecomax_by_ecoSEXP);
+    Rcpp::traits::input_parameter< int >::type timestep(timestepSEXP);
+    rcpp_result_gen = Rcpp::wrap(basefire_serotiny_build_256(csr, cell_state, active_ids, active_eco, recruited_pairs, active_sero, species_names, arrival, probability, eco_keys, anpp_by_eco, ecomax_by_eco, timestep));
+    return rcpp_result_gen;
+END_RCPP
+}
+// basefire_serotiny_baseprob_csr_259
+Rcpp::NumericMatrix basefire_serotiny_baseprob_csr_259(Rcpp::List csr, Rcpp::IntegerVector state_eco, Rcpp::IntegerVector eco_keys, Rcpp::List shade_thresholds, Rcpp::NumericVector max_biomass_by_eco, Rcpp::List class_probability_by_eco);
+RcppExport SEXP _landisR_basefire_serotiny_baseprob_csr_259(SEXP csrSEXP, SEXP state_ecoSEXP, SEXP eco_keysSEXP, SEXP shade_thresholdsSEXP, SEXP max_biomass_by_ecoSEXP, SEXP class_probability_by_ecoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type csr(csrSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type state_eco(state_ecoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type eco_keys(eco_keysSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type shade_thresholds(shade_thresholdsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type max_biomass_by_eco(max_biomass_by_ecoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type class_probability_by_eco(class_probability_by_ecoSEXP);
+    rcpp_result_gen = Rcpp::wrap(basefire_serotiny_baseprob_csr_259(csr, state_eco, eco_keys, shade_thresholds, max_biomass_by_eco, class_probability_by_eco));
+    return rcpp_result_gen;
+END_RCPP
+}
 // bs52_growth_kernel_version_cpp
 std::string bs52_growth_kernel_version_cpp();
 RcppExport SEXP _landisR_bs52_growth_kernel_version_cpp() {
@@ -459,6 +557,12 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_landisR_basefire_expand_cohorts_251", (DL_FUNC) &_landisR_basefire_expand_cohorts_251, 6},
+    {"_landisR_basefire_prefire_csr_252", (DL_FUNC) &_landisR_basefire_prefire_csr_252, 7},
+    {"_landisR_basefire_apply_csr_253", (DL_FUNC) &_landisR_basefire_apply_csr_253, 9},
+    {"_landisR_basefire_csr_decode_states_255", (DL_FUNC) &_landisR_basefire_csr_decode_states_255, 3},
+    {"_landisR_basefire_serotiny_build_256", (DL_FUNC) &_landisR_basefire_serotiny_build_256, 13},
+    {"_landisR_basefire_serotiny_baseprob_csr_259", (DL_FUNC) &_landisR_basefire_serotiny_baseprob_csr_259, 6},
     {"_landisR_bs52_growth_kernel_version_cpp", (DL_FUNC) &_landisR_bs52_growth_kernel_version_cpp, 0},
     {"_landisR_bs52_record_landscape_cpp", (DL_FUNC) &_landisR_bs52_record_landscape_cpp, 4},
     {"_landisR_bs52_grow_live_block_cpp", (DL_FUNC) &_landisR_bs52_grow_live_block_cpp, 6},

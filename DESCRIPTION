@@ -1,47 +1,20 @@
 Package: landisR
 Type: Package
 Title: Living Biomass Succession Engine Compatible with LANDIS-II Workflows
-Version: 0.1.0.9003
+Version: 0.1.0.9004
 Authors@R: person("Yan", "Boulanger", email = "landisR-maintainer@example.invalid", role = c("aut", "cre"))
-Description: Experimental R and Rcpp implementation of living-biomass
-    succession processes designed for LANDIS-II Biomass Succession
-    comparison and independent simulation workflows. The validated beta
-    provides deterministic growth and mortality, Ward seed dispersal,
-    stochastic establishment, compact state-compressed outputs, LANDIS-II
-    input adapters, and direct R-native project construction.
+Description: Experimental R and Rcpp implementation of living-biomass succession processes designed for LANDIS-II Biomass Succession comparison and independent
+                  simulation workflows. The validated beta provides deterministic growth and mortality, Ward seed dispersal, stochastic establishment, compact
+                  state-compressed outputs, LANDIS-II input adapters, and direct R-native project construction.
 License: file LICENSE
 Encoding: UTF-8
 LazyData: false
 Depends: R (>= 4.3.0)
-Imports:
-    Rcpp
-LinkingTo:
-    Rcpp
-Suggests:
-    terra,
-    testthat (>= 3.0.0),
-    rmarkdown
+Imports: Rcpp
+LinkingTo: Rcpp
+Suggests: terra, testthat (>= 3.0.0), rmarkdown
 Config/testthat/edition: 3
 NeedsCompilation: yes
-Collate:
-    'biomass52.R'
-    'explicit_initial52.R'
-    'spinup52.R'
-    'fast52.R'
-    'rcpp52.R'
-    'simulation52.R'
-    'ward52.R'
-    'canonical52.R'
-    'climate52.R'
-    'production52.R'
-    'read_landis52.R'
-    'import_landis52.R'
-    'large52.R'
-    'run_persistence.R'
-    'project_api.R'
-    'interactive_api.R'
-    'serotiny_api.R'
-    'map_api.R'
-    'coupling_api.R'
-    'RcppExports.R'
-    'zzz_package_runtime.R'
+Collate: 'biomass52.R' 'explicit_initial52.R' 'spinup52.R' 'fast52.R' 'rcpp52.R' 'simulation52.R' 'ward52.R' 'canonical52.R' 'climate52.R' 'production52.R'
+                  'read_landis52.R' 'import_landis52.R' 'large52.R' 'run_persistence.R' 'project_api.R' 'interactive_api.R' 'serotiny_api.R' 'map_api.R'
+                  'coupling_api.R' 'RcppExports.R' 'zzz_package_runtime.R' 'zzzz_270F_permanent.R'

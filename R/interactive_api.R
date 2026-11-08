@@ -642,7 +642,7 @@ landis_step <- function(
   simulation
 }
 
-landisR_state_list <- function(
+.landisR_legacy_state_list_270F <- function(
     simulation) {
 
   bs52_csr_to_states_cpp(
@@ -1749,7 +1749,7 @@ landisR_state_run <- function(
   out
 }
 
-landis_state <- function(
+.landisR_legacy_state_270F <- function(
     simulation,
     representation = c(
       "compact",
@@ -2981,7 +2981,7 @@ landisR_state_key <- function(
   )
 }
 
-landisR_apply_cohorts <- function(
+.landisR_legacy_apply_270F <- function(
     simulation,
     cohorts,
     clear_cells) {
