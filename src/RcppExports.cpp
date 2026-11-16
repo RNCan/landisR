@@ -42,8 +42,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // basefire_apply_csr_253
-Rcpp::List basefire_apply_csr_253(Rcpp::List old_store, Rcpp::IntegerVector old_state_eco, Rcpp::IntegerVector old_cell_state, Rcpp::IntegerVector active_ids, Rcpp::IntegerVector active_eco, Rcpp::DataFrame replacement, Rcpp::IntegerVector clear_cells, Rcpp::CharacterVector species_names, int species_base);
-RcppExport SEXP _landisR_basefire_apply_csr_253(SEXP old_storeSEXP, SEXP old_state_ecoSEXP, SEXP old_cell_stateSEXP, SEXP active_idsSEXP, SEXP active_ecoSEXP, SEXP replacementSEXP, SEXP clear_cellsSEXP, SEXP species_namesSEXP, SEXP species_baseSEXP) {
+Rcpp::List basefire_apply_csr_253(Rcpp::List old_store, Rcpp::IntegerVector old_state_eco, Rcpp::IntegerVector old_cell_state, Rcpp::IntegerVector active_ids, Rcpp::IntegerVector active_eco, Rcpp::DataFrame replacement, Rcpp::IntegerVector clear_cells, Rcpp::CharacterVector species_names, int species_base, bool preserve_order);
+RcppExport SEXP _landisR_basefire_apply_csr_253(SEXP old_storeSEXP, SEXP old_state_ecoSEXP, SEXP old_cell_stateSEXP, SEXP active_idsSEXP, SEXP active_ecoSEXP, SEXP replacementSEXP, SEXP clear_cellsSEXP, SEXP species_namesSEXP, SEXP species_baseSEXP, SEXP preserve_orderSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< Rcpp::List >::type old_store(old_storeSEXP);
@@ -55,7 +55,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type clear_cells(clear_cellsSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type species_names(species_namesSEXP);
     Rcpp::traits::input_parameter< int >::type species_base(species_baseSEXP);
-    rcpp_result_gen = Rcpp::wrap(basefire_apply_csr_253(old_store, old_state_eco, old_cell_state, active_ids, active_eco, replacement, clear_cells, species_names, species_base));
+    Rcpp::traits::input_parameter< bool >::type preserve_order(preserve_orderSEXP);
+    rcpp_result_gen = Rcpp::wrap(basefire_apply_csr_253(old_store, old_state_eco, old_cell_state, active_ids, active_eco, replacement, clear_cells, species_names, species_base, preserve_order));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -555,11 +556,48 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// landis_mt19937_init_cpp
+std::string landis_mt19937_init_cpp(double seed);
+RcppExport SEXP _landisR_landis_mt19937_init_cpp(SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< double >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(landis_mt19937_init_cpp(seed));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bs52_ward531_draw_cpp
+List bs52_ward531_draw_cpp(LogicalMatrix mature, IntegerVector cell_state, IntegerVector state_eco, IntegerVector shade_class, IntegerMatrix targets, int nrow, int ncol, IntegerVector positions, IntegerVector site_order, NumericMatrix sep, NumericMatrix light, IntegerVector tolerance, List groups, LogicalVector strict, IntegerVector mask, IntegerVector excluded, std::string rng_state, double rng_offset);
+RcppExport SEXP _landisR_bs52_ward531_draw_cpp(SEXP matureSEXP, SEXP cell_stateSEXP, SEXP state_ecoSEXP, SEXP shade_classSEXP, SEXP targetsSEXP, SEXP nrowSEXP, SEXP ncolSEXP, SEXP positionsSEXP, SEXP site_orderSEXP, SEXP sepSEXP, SEXP lightSEXP, SEXP toleranceSEXP, SEXP groupsSEXP, SEXP strictSEXP, SEXP maskSEXP, SEXP excludedSEXP, SEXP rng_stateSEXP, SEXP rng_offsetSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< LogicalMatrix >::type mature(matureSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type cell_state(cell_stateSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type state_eco(state_ecoSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type shade_class(shade_classSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type targets(targetsSEXP);
+    Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
+    Rcpp::traits::input_parameter< int >::type ncol(ncolSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type positions(positionsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type site_order(site_orderSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type sep(sepSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type light(lightSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type tolerance(toleranceSEXP);
+    Rcpp::traits::input_parameter< List >::type groups(groupsSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type strict(strictSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type mask(maskSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type excluded(excludedSEXP);
+    Rcpp::traits::input_parameter< std::string >::type rng_state(rng_stateSEXP);
+    Rcpp::traits::input_parameter< double >::type rng_offset(rng_offsetSEXP);
+    rcpp_result_gen = Rcpp::wrap(bs52_ward531_draw_cpp(mature, cell_state, state_eco, shade_class, targets, nrow, ncol, positions, site_order, sep, light, tolerance, groups, strict, mask, excluded, rng_state, rng_offset));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_landisR_basefire_expand_cohorts_251", (DL_FUNC) &_landisR_basefire_expand_cohorts_251, 6},
     {"_landisR_basefire_prefire_csr_252", (DL_FUNC) &_landisR_basefire_prefire_csr_252, 7},
-    {"_landisR_basefire_apply_csr_253", (DL_FUNC) &_landisR_basefire_apply_csr_253, 9},
+    {"_landisR_basefire_apply_csr_253", (DL_FUNC) &_landisR_basefire_apply_csr_253, 10},
     {"_landisR_basefire_csr_decode_states_255", (DL_FUNC) &_landisR_basefire_csr_decode_states_255, 3},
     {"_landisR_basefire_serotiny_build_256", (DL_FUNC) &_landisR_basefire_serotiny_build_256, 13},
     {"_landisR_basefire_serotiny_baseprob_csr_259", (DL_FUNC) &_landisR_basefire_serotiny_baseprob_csr_259, 6},
@@ -588,6 +626,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_landisR_bs52_ward_probability_fused_bitset_cpp", (DL_FUNC) &_landisR_bs52_ward_probability_fused_bitset_cpp, 14},
     {"_landisR_bs52_ward_probability_fused_bitset_v38_reference_cpp", (DL_FUNC) &_landisR_bs52_ward_probability_fused_bitset_v38_reference_cpp, 14},
     {"_landisR_bs52_ward_probability_fused_bitset_v310_reference_cpp", (DL_FUNC) &_landisR_bs52_ward_probability_fused_bitset_v310_reference_cpp, 14},
+    {"_landisR_landis_mt19937_init_cpp", (DL_FUNC) &_landisR_landis_mt19937_init_cpp, 1},
+    {"_landisR_bs52_ward531_draw_cpp", (DL_FUNC) &_landisR_bs52_ward531_draw_cpp, 18},
     {NULL, NULL, 0}
 };
 

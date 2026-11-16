@@ -4145,6 +4145,7 @@ List bs52_grow_csr_indexed_features_cpp(
     n_states,
     n_species
   );
+  IntegerVector shade_class(n_states);
 
   int progress_percent = -1;
 
@@ -4347,6 +4348,7 @@ List bs52_grow_csr_indexed_features_cpp(
     if (cls < 0 ||
         cls >= n_shade_classes)
       stop("Invalid shade class in CSR growth");
+    shade_class[s] = cls;
 
     const std::vector<double>& probability_row =
       base_probability_lookup[
@@ -4436,6 +4438,7 @@ List bs52_grow_csr_indexed_features_cpp(
       establishment_biomass,
     _["base_probability"] =
       base_probability,
+    _["shade_class"] = shade_class,
     _["weight_lookup_fallbacks"] =
       static_cast<double>(
         competition_weight_lookup.fallback_count

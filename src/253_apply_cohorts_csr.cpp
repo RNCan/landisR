@@ -33,13 +33,13 @@ template<typename T> void bytes253(std::string &s, const T &x) {
 // transformations apply to the KEY only for EXISTING CSR states.  The raw
 // CSR cohort row order must stay unchanged when those states are reused,
 // because the reference keeps it until bs52_states_list_to_csr_cpp().
-std::string key253(const State253 &state) {
+std::string key253(const State253 &state, bool preserve_order) {
   std::vector<Cohort253> normalized;
   normalized.reserve(state.cohorts.size());
   for (const auto &c : state.cohorts) {
     if (c.biomass > 0.0) normalized.push_back(c);
   }
-  std::sort(normalized.begin(), normalized.end(),
+  if (!preserve_order) std::sort(normalized.begin(), normalized.end(),
     [](const Cohort253 &a,const Cohort253 &b) {
       if (a.species != b.species) return a.species < b.species;
       return a.age < b.age;
@@ -68,7 +68,8 @@ Rcpp::List basefire_apply_csr_253(
     Rcpp::DataFrame replacement,
     Rcpp::IntegerVector clear_cells,
     Rcpp::CharacterVector species_names,
-    int species_base) {
+    int species_base,
+    bool preserve_order = false) {
   if(species_base!=0 && species_base!=1) stop("253: invalid species base");
   const IntegerVector offsets=as<IntegerVector>(old_store["offset"]);
   const IntegerVector old_species=as<IntegerVector>(old_store["species_id"]);
@@ -101,7 +102,7 @@ Rcpp::List basefire_apply_csr_253(
         stop("253: invalid CSR species code for requested base");
       state.cohorts.push_back({old_species[i],old_age[i],old_biomass[i]});
     }
-    std::string key=key253(state);
+    std::string key=key253(state, preserve_order);
     states.push_back(std::move(state));
     state_map.emplace(std::move(key),s); // first match, same as match(key, state_keys)
   }
@@ -165,11 +166,11 @@ Rcpp::List basefire_apply_csr_253(
     replacement_state.eco=active_eco[position];
     auto g=grouped.find(id);
     if(g!=grouped.end()) replacement_state.cohorts=std::move(g->second);
-    std::sort(replacement_state.cohorts.begin(),replacement_state.cohorts.end(),
+    if (!preserve_order) std::sort(replacement_state.cohorts.begin(),replacement_state.cohorts.end(),
         [](const Cohort253&a,const Cohort253&b) {
           return a.species<b.species || (a.species==b.species && a.age<b.age);
         });
-    auto key=key253(replacement_state);
+    auto key=key253(replacement_state, preserve_order);
     auto found=state_map.find(key);
     int state_id;
     if(found!=state_map.end()) state_id=found->second;

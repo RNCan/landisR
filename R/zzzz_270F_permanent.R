@@ -47,7 +47,7 @@ landis_state <- function(simulation,representation=c('compact','cohorts','biomas
   out
 }
 
-landisR_apply_cohorts <- function(simulation,cohorts,clear_cells) {
+landisR_apply_cohorts <- function(simulation, cohorts, clear_cells, preserve_order = FALSE) {
   if (is.null(cohorts) && !length(clear_cells)) return(simulation)
   if (is.null(cohorts)) cohorts <- data.frame(cell_id=integer(),species=character(),
     age=numeric(),biomass=numeric(),stringsAsFactors=FALSE)
@@ -59,7 +59,7 @@ landisR_apply_cohorts <- function(simulation,cohorts,clear_cells) {
     data.frame(cell_id=as.integer(cohorts$cell_id),
       species=as.character(cohorts$species),age=as.numeric(cohorts$age),
       biomass=as.numeric(cohorts$biomass),stringsAsFactors=FALSE),
-    as.integer(clear_cells),sp,0L)
+    as.integer(clear_cells), sp, 0L, preserve_order)
   simulation$states <- ans$states
   simulation$state_eco <- ans$state_eco
   simulation$cell_state <- ans$cell_state
@@ -137,7 +137,7 @@ landisR_serotiny_prefire_sources <- function(simulation,cells) {
 # landisR_serotiny_recruit_after_fire est genere AU BUILD, depuis
 # la fonction source 0.1.0.9003 et deux ancres AST strictes.
 
-landisR_serotiny_recruit_after_fire <- function (simulation, prefire_sources, stochastic = TRUE)
+landisR_serotiny_recruit_after_fire <- function (simulation, prefire_sources, stochastic = TRUE, year = simulation$year)
 {
     config <- simulation$ctx$config
     species <- landisR_normalize_serotiny_traits(config$species)
@@ -153,7 +153,7 @@ landisR_serotiny_recruit_after_fire <- function (simulation, prefire_sources, st
         return(list(simulation = simulation, source_count = source_count, recruited_cells = 0L, recruited_cohorts = 0L, recruitment = data.frame()))
     }
     states <- NULL
-    features <- list(base_probability = .landisR_baseprob_270F(simulation, config, simulation$year))
+    features <- list(base_probability = .landisR_baseprob_270F(simulation, config, year))
     n_sites <- length(simulation$ctx$ids)
     n_sero <- length(active_sero)
     arrival <- matrix(0, nrow = n_sites, ncol = n_sero, dimnames = list(NULL, species$species[active_sero]))
@@ -180,6 +180,9 @@ landisR_serotiny_recruit_after_fire <- function (simulation, prefire_sources, st
     else {
         recruited <- probability > 0
     }
+    excluded <- simulation$establishment$excluded_cells
+    if (length(excluded))
+        recruited[match(excluded, simulation$ctx$ids), ] <- FALSE
     pairs <- which(recruited, arr.ind = TRUE)
     if (!nrow(pairs)) {
         return(list(simulation = simulation, source_count = source_count, recruited_cells = 0L, recruited_cohorts = 0L, recruitment = data.frame()))
@@ -193,7 +196,7 @@ landisR_serotiny_recruit_after_fire <- function (simulation, prefire_sources, st
     get_params <- function(eco) {
         key <- as.character(eco)
         if (!exists(key, params_cache, inherits = FALSE)) {
-            assign(key, bs52_dynamic_at(config, simulation$year, eco), envir = params_cache)
+            assign(key, bs52_dynamic_at(config, year, eco), envir = params_cache)
         }
         get(key, params_cache, inherits = FALSE)
     }

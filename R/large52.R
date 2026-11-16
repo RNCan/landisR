@@ -1110,7 +1110,8 @@ bs52_large_grow_states52 <- function(states, state_eco, block_years,
       establishment_biomass = as.numeric(
         out$establishment_biomass
       ),
-      base_probability = base_probability
+      base_probability = base_probability,
+      shade_class = out$shade_class
     ),
     ecology = ecology,
     fused = TRUE,
@@ -1528,7 +1529,9 @@ bs52_large_recruit52 <- function(states, state_eco, cell_state,
                                  rng_chunk_cells = 100000L,
                                  progress = bs52_large_progress_enabled52(),
                                  precomputed_features = NULL,
-                                 precomputed_ecology = NULL) {
+                                 precomputed_ecology = NULL,
+                                 establishment = NULL,
+                                 landis_rng = NULL) {
   variant <- match.arg(variant)
   mode <- match.arg(mode)
 
@@ -1558,58 +1561,75 @@ bs52_large_recruit52 <- function(states, state_eco, cell_state,
 
   ward_start <- proc.time()[["elapsed"]]
 
-  ward_table <- ctx$ward_tables[[variant]]
+  if (is.null(landis_rng)) {
+    ward_table <- ctx$ward_tables[[variant]]
 
-  if (is.null(ward_table)) {
-    bs52_large_stop(
-      "Table Ward precompilee absente pour ",
-      variant,
-      "."
+    if (is.null(ward_table)) {
+      bs52_large_stop(
+        "Table Ward precompilee absente pour ",
+        variant,
+        "."
+      )
+    }
+
+    probability <- bs52_ward_probability_fused_bitset_cpp(
+      features$mature,
+      as.integer(cell_state),
+      ctx$targets,
+      as.integer(ctx$nrow),
+      as.integer(ctx$ncol),
+      as.integer(ctx$neighborhood$row),
+      as.integer(ctx$neighborhood$col),
+      ward_table$log_failure,
+      as.logical(ward_table$omnidisperse),
+      features$base_probability,
+      local_only = identical(
+        mode,
+        "local"
+      ),
+      ward2019 = identical(
+        variant,
+        "ward2019"
+      ),
+      show_progress = progress,
+      progress_label = paste0(
+        "Annee ",
+        year,
+        " - Ward bitset"
+      )
     )
+
+    ward_seconds <- bs52_large_elapsed(
+      ward_start
+    )
+
+    rng_start <- proc.time()[["elapsed"]]
+
+    recruit_mask <- bs52_large_masks_from_probability52(
+      probability,
+      stochastic = stochastic,
+      chunk_cells = rng_chunk_cells
+    )
+
+    if (!is.null(establishment)) {
+      recruit_mask <- landisR_establishment_mask(
+        recruit_mask, establishment, ctx$ids, cell_state, state_eco,
+        species_names, ecology$sep
+      )
+    }
+
+    rng_seconds <- bs52_large_elapsed(rng_start)
+
+    rm(probability)
+  } else {
+    draw <- bs52_ward531_recruit(features, ecology, ctx, cell_state, state_eco,
+                                establishment, landis_rng)
+    recruit_mask <- draw$mask
+    landis_rng <- list(state = draw$rng_state, offset = draw$rng_offset)
+    ward_seconds <- bs52_large_elapsed(ward_start)
+    rng_seconds <- 0
   }
 
-  probability <- bs52_ward_probability_fused_bitset_cpp(
-    features$mature,
-    as.integer(cell_state),
-    ctx$targets,
-    as.integer(ctx$nrow),
-    as.integer(ctx$ncol),
-    as.integer(ctx$neighborhood$row),
-    as.integer(ctx$neighborhood$col),
-    ward_table$log_failure,
-    as.logical(ward_table$omnidisperse),
-    features$base_probability,
-    local_only = identical(
-      mode,
-      "local"
-    ),
-    ward2019 = identical(
-      variant,
-      "ward2019"
-    ),
-    show_progress = progress,
-    progress_label = paste0(
-      "Annee ",
-      year,
-      " - Ward bitset"
-    )
-  )
-
-  ward_seconds <- bs52_large_elapsed(
-    ward_start
-  )
-
-  rng_start <- proc.time()[["elapsed"]]
-
-  recruit_mask <- bs52_large_masks_from_probability52(
-    probability,
-    stochastic = stochastic,
-    chunk_cells = rng_chunk_cells
-  )
-
-  rng_seconds <- bs52_large_elapsed(rng_start)
-
-  rm(probability)
   invisible(gc(FALSE))
 
   rebuild_start <- proc.time()[["elapsed"]]
@@ -1640,6 +1660,7 @@ bs52_large_recruit52 <- function(states, state_eco, cell_state,
     n_states_before = bs52_large_n_states52(states),
     n_states_after = bs52_large_n_states52(rebuilt$states),
     n_recruited_cells = as.integer(rebuilt$n_recruited_cells),
+    landis_rng = landis_rng,
     timing = data.frame(
       feature_seconds = feature_seconds,
       ward_seconds = ward_seconds,
@@ -1850,7 +1871,9 @@ bs52_run_large_landscape52 <- function(
       "gzip1",
       "gzip",
       "none"
-    )) {
+    ),
+    establishment = NULL,
+    landis_rng = NULL) {
 
   engine <- match.arg(engine)
   dispersal <- match.arg(dispersal)
@@ -2145,9 +2168,12 @@ bs52_run_large_landscape52 <- function(
       rng_chunk_cells = rng_chunk_cells,
       progress = progress,
       precomputed_features = growth_bundle$features,
-      precomputed_ecology = growth_bundle$ecology
+      precomputed_ecology = growth_bundle$ecology,
+      establishment = establishment,
+      landis_rng = landis_rng
     )
 
+    landis_rng <- recruited$landis_rng
     states <- recruited$states
     state_eco <- recruited$state_eco
     cell_state <- recruited$cell_state
@@ -2248,6 +2274,7 @@ bs52_run_large_landscape52 <- function(
       data.frame()
     },
     profile = profile,
+    landis_rng = landis_rng,
     final_rng_state = get(
       ".Random.seed",
       .GlobalEnv,

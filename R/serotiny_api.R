@@ -453,8 +453,14 @@ landis_fire <- function(simulation,
                         update = NULL,
                         stochastic = TRUE,
                         severity = NULL,
-                        metadata = list()) {
+                        metadata = list(),
+                        year = simulation$year) {
   simulation <- landisR_validate_simulation(simulation)
+
+  if (!is.numeric(year) || length(year) != 1L || is.na(year) ||
+      !year %in% c(simulation$year, simulation$year + simulation$project$canonical$timestep))
+    stop("Fire year must be the current or next succession year.", call. = FALSE)
+  year <- as.integer(year)
 
   cells <- unique(as.integer(cells))
   if (!length(cells) || anyNA(cells)) {
@@ -489,12 +495,14 @@ landis_fire <- function(simulation,
 
   if (!is.null(update)) {
     simulation <- landis_apply(simulation, update)
+    simulation$history[[length(simulation$history)]]$year <- year
   }
 
   recruited <- landisR_serotiny_recruit_after_fire(
     simulation,
     sources,
-    stochastic = stochastic
+    stochastic = stochastic,
+    year = year
   )
   simulation <- recruited$simulation
 
@@ -511,10 +519,24 @@ landis_fire <- function(simulation,
   )
 
   simulation$history[[length(simulation$history) + 1L]] <- landisR_event(
-    simulation$year,
+    year,
     "fire",
     event_metadata
   )
 
+  burned <- if (is.null(severity)) cells else cells[severity > 0]
+  if (year > 0L && length(burned)) {
+    previous <- simulation$fire_damage_history
+    if (!is.null(previous))
+      previous <- previous[!previous$cell_id %in% burned | previous$year > year, , drop = FALSE]
+    new <- setdiff(burned, previous$cell_id)
+    simulation$fire_damage_history <- rbind(previous,
+                                            data.frame(cell_id = new, year = rep.int(year, length(new))))
+    rownames(simulation$fire_damage_history) <- NULL
+  }
   simulation
+}
+
+landis_fire_history <- function(simulation) {
+  landisR_validate_simulation(simulation)$fire_damage_history
 }

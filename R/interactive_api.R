@@ -231,7 +231,12 @@ landis_initialize <- function(
     growth_engine = landis_growth_biomass52(),
     dispersal = "ward",
     ward_variant = "ward2019",
-    rng_chunk_cells = 100000L) {
+    rng_chunk_cells = 100000L,
+    recruitment_rng = c("analytical", "landis_v7")) {
+
+  recruitment_rng <- match.arg(recruitment_rng)
+  if (recruitment_rng == "landis_v7" && !identical(dispersal, "ward"))
+    landisR_stop("recruitment_rng = 'landis_v7' requires Ward dispersal.")
 
   if (!inherits(
         project,
@@ -358,6 +363,11 @@ landis_initialize <- function(
           )
         )
     )
+
+  if (recruitment_rng == "landis_v7") {
+    out$ctx <- bs52_ward531_context(ctx)
+    out$landis_rng <- list(state = landis_mt19937_init_cpp(seed), offset = 0)
+  }
 
   class(
     out
@@ -544,9 +554,16 @@ landisR_step_biomass52 <- function(
       snapshot_compression =
         "gzip1",
       checkpoint_compression =
-        "gzip1"
+        "gzip1",
+      establishment = simulation$establishment,
+      landis_rng = simulation$landis_rng
     )
 
+  if (!is.null(simulation$establishment$planting)) {
+    simulation$establishment$planting <- NULL
+    if (!length(simulation$establishment$excluded_cells))
+      simulation$establishment <- NULL
+  }
   simulation$states <-
     result$states
 
@@ -562,6 +579,7 @@ landisR_step_biomass52 <- function(
 
   simulation$rng_state <-
     result$final_rng_state
+  simulation$landis_rng <- result$landis_rng
 
   simulation$year <-
     end_year
@@ -2116,7 +2134,12 @@ landis_update <- function(
     cohorts = NULL,
     clear_cells = integer(),
     settings = list(),
-    metadata = list()) {
+    metadata = list(),
+    preserve_cohort_order = FALSE) {
+
+  if (!is.logical(preserve_cohort_order) || length(preserve_cohort_order) != 1L ||
+      is.na(preserve_cohort_order))
+    landisR_stop("preserve_cohort_order must be TRUE or FALSE.")
 
   dynamic_mode <-
     match.arg(
@@ -2235,6 +2258,7 @@ landis_update <- function(
         cohorts,
       clear_cells =
         clear_cells,
+      preserve_cohort_order = preserve_cohort_order,
       settings =
         settings,
       metadata =
@@ -2726,6 +2750,9 @@ landisR_rebind_project <- function(
     bs52_large_context52(
       project$canonical
     )
+
+  if (!is.null(simulation$landis_rng))
+    new_ctx <- bs52_ward531_context(new_ctx)
 
   pair_key <-
     paste(
@@ -3393,7 +3420,8 @@ landis_apply <- function(
     landisR_apply_cohorts(
       simulation,
       update$cohorts,
-      update$clear_cells
+      update$clear_cells,
+      preserve_order = isTRUE(update$preserve_cohort_order)
     )
 
   simulation$history[[length(simulation$history) + 1L]] <-

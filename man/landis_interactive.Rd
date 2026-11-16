@@ -12,7 +12,8 @@ landis_growth_biomass52()
 landis_initialize(project, seed = 4357L,
   growth_engine = landis_growth_biomass52(),
   dispersal = "ward", ward_variant = "ward2019",
-  rng_chunk_cells = 100000L)
+  rng_chunk_cells = 100000L,
+  recruitment_rng = c("analytical", "landis_v7"))
 
 landis_step(simulation, steps = 1L)
 
@@ -25,7 +26,7 @@ landis_update(project = NULL, canonical = NULL, landscape = NULL,
   ecoregion_parameters = NULL, dynamic = NULL,
   dynamic_mode = c("merge", "replace"), shade = NULL, light = NULL,
   fire_reductions = NULL, cohorts = NULL, clear_cells = integer(),
-  settings = list(), metadata = list())
+  settings = list(), metadata = list(), preserve_cohort_order = FALSE)
 
 landis_apply(simulation, update)
 }
@@ -45,11 +46,17 @@ and living cohorts can be modified when the resulting canonical project passes
 validation.
 }
 \arguments{
+  \item{preserve_cohort_order}{Keep the supplied cohort row order within each cell.}
   \item{project}{A \code{landisR_project}.}
   \item{seed}{Random seed for the Biomass Succession process.}
   \item{growth_engine}{A \code{landisR_growth_engine}.}
   \item{dispersal}{Dispersal mode.}
-  \item{ward_variant}{Ward dispersal variant.}
+  \item{ward_variant}{Ward dispersal variant for the analytical engine.}
+  \item{recruitment_rng}{The default \code{"analytical"} uses the existing
+  recruitment probabilities and R generator. \code{"landis_v7"} uses the
+  sequential Ward draw order in Biomass Succession 5.3.1 and stores the
+  LANDIS-II MT19937 state in the simulation. Use with \code{dispersal = "ward"}.
+  A compatible Harvest extension uses that same stream.}
   \item{rng_chunk_cells}{RNG chunk size used by the validated engine.}
   \item{simulation}{A \code{landisR_simulation}.}
   \item{steps}{Number of succession timesteps to advance.}

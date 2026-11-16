@@ -1,5 +1,6 @@
 \name{landis_fire}
 \alias{landis_fire}
+\alias{landis_fire_history}
 \title{Apply a structured fire event with serotinous recruitment}
 \usage{
 landis_fire(
@@ -8,8 +9,11 @@ landis_fire(
   update = NULL,
   stochastic = TRUE,
   severity = NULL,
-  metadata = list()
+  metadata = list(),
+  year = simulation$year
 )
+
+landis_fire_history(simulation)
 }
 \arguments{
   \item{simulation}{A \code{landisR_simulation}.}
@@ -30,12 +34,19 @@ landis_fire(
   event metadata. It does not yet alter cone opening, seed release, or
   establishment probability.}
   \item{metadata}{Optional list appended to the fire-event history.}
+  \item{year}{Current or next succession year. Pass the target year
+  in a disturbance called by \code{landis_sim()}.}
 }
 \description{
 Applies a structured fire event and evaluates fire-triggered serotinous
 recruitment. Mature serotinous sources are identified from the pre-fire
 cohort state, an optional fire-impact update is applied, and seed arrival
 and establishment are then evaluated in the post-fire environment.
+\code{landis_fire_history()} returns the latest positive recorded fire
+year per burned cell as a sparse \code{cell_id}, \code{year} table, or
+\code{NULL} before any such record. A cell with positive severity
+qualifies even when no cohort dies. When severity is omitted, the
+footprint supplied by the caller is treated as burned.
 }
 \details{
 \strong{Event order.} The function intentionally separates fire-triggered

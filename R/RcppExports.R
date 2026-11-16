@@ -9,8 +9,8 @@ basefire_prefire_csr_252 <- function(state_store, cell_state, active_positions, 
     .Call(`_landisR_basefire_prefire_csr_252`, state_store, cell_state, active_positions, cell_ids, serotiny_species_1based, maturity, species_id_base)
 }
 
-basefire_apply_csr_253 <- function(old_store, old_state_eco, old_cell_state, active_ids, active_eco, replacement, clear_cells, species_names, species_base) {
-    .Call(`_landisR_basefire_apply_csr_253`, old_store, old_state_eco, old_cell_state, active_ids, active_eco, replacement, clear_cells, species_names, species_base)
+basefire_apply_csr_253 <- function(old_store, old_state_eco, old_cell_state, active_ids, active_eco, replacement, clear_cells, species_names, species_base, preserve_order = FALSE) {
+    .Call(`_landisR_basefire_apply_csr_253`, old_store, old_state_eco, old_cell_state, active_ids, active_eco, replacement, clear_cells, species_names, species_base, preserve_order)
 }
 
 basefire_csr_decode_states_255 <- function(store_sexp, species_sexp, species_base = 0L) {
@@ -123,5 +123,13 @@ bs52_ward_probability_fused_bitset_v38_reference_cpp <- function(state_mature, c
 
 bs52_ward_probability_fused_bitset_v310_reference_cpp <- function(state_mature, cell_state, targets, nr, nc, neighbor_row, neighbor_col, log_failure, omnidisperse, base_probability, local_only = FALSE, ward2019 = TRUE, show_progress = FALSE, progress_label = "Ward bitset") {
     .Call(`_landisR_bs52_ward_probability_fused_bitset_v310_reference_cpp`, state_mature, cell_state, targets, nr, nc, neighbor_row, neighbor_col, log_failure, omnidisperse, base_probability, local_only, ward2019, show_progress, progress_label)
+}
+
+landis_mt19937_init_cpp <- function(seed) {
+    .Call(`_landisR_landis_mt19937_init_cpp`, seed)
+}
+
+bs52_ward531_draw_cpp <- function(mature, cell_state, state_eco, shade_class, targets, nrow, ncol, positions, site_order, sep, light, tolerance, groups, strict, mask, excluded, rng_state, rng_offset) {
+    .Call(`_landisR_bs52_ward531_draw_cpp`, mature, cell_state, state_eco, shade_class, targets, nrow, ncol, positions, site_order, sep, light, tolerance, groups, strict, mask, excluded, rng_state, rng_offset)
 }
 
