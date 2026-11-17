@@ -8,14 +8,14 @@ landis_sim(x, steps = NULL, extensions = NULL, seed = 4357L, ...)
 landis_extension(
   step,
   initialize = function(simulation) NULL,
-  phase = c("before_succession", "after_succession"),
-  type = c("disturbance", "output")
+  phase = c("before_succession", "after_succession", "succession"),
+  type = c("disturbance", "output", "succession")
 )
 }
 \arguments{
   \item{x}{A landisR project, an initialized simulation, or a result from
   \code{landis_sim()}.}
-  \item{steps}{Number of complete succession steps. \code{NULL} runs all
+  \item{steps}{Number of complete simulation steps. \code{NULL} runs all
   remaining complete steps. Use zero to initialize without advancing.}
   \item{extensions}{Named list of extensions when starting a run.}
   \item{seed, ...}{Arguments passed to \code{landis_initialize()} when
@@ -27,13 +27,17 @@ landis_extension(
   the extension state.}
   \item{phase}{Defaults to the phase associated with \code{type}.}
   \item{type}{Disturbances run before succession. Read-only output
-  extensions run after succession and may update their own state and events.}
+  extensions run after succession and may update their own state and events.
+  Projects from \code{landis_build_landscape()} can register one
+  \code{type = "succession"} extension.}
 }
 \description{
 Each step applies the disturbances in declaration order to the same forest
 state, advances succession once, and runs the output extensions. All
-extensions receive the target year. The simulation clock advances during
-succession. For Base Fire and Biomass Harvest, supply descriptors from
+extensions receive the target year. For landscape projects, an external
+succession extension receives the forest after the disturbances and
+returns its updated cohorts before the core advances the clock.
+A landscape project can also run with no succession extension. For Base Fire and Biomass Harvest, supply descriptors from
 \code{landisR.fire::basefire_extension()} and
 \code{landisR.harvest::harvest_extension()} in the desired order. The
 latest fire date for each burned cell is available to subsequent harvest

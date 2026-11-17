@@ -6,6 +6,7 @@
 # depend on the presence or name of another test file.
 
 make_serotiny_project <- function(type = "strict", dispersal = "local", source_age = 30L, ncol = 5L, include_traits = TRUE) {
+  skip_if_not_installed("landisR.succession.biomass")
     species <- data.frame(species = "PINU.BAN", longevity = 120L, maturity = 15L, shade_tolerance = 1L, fire_tolerance = 3L, 
         effective_seed_distance = 100, max_seed_distance = 250, vegetative_probability = 0, min_sprout_age = 0L, max_sprout_age = 0L, 
         post_fire_regeneration = "serotiny", stringsAsFactors = FALSE)

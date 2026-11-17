@@ -1,18 +1,12 @@
 # landisR
 
-Development package corresponding to release label `0.1.0-beta.2`.
+The core manages the landscape grid, shared CSR cohort state, simulation
+clock, extensions, and persistence. A standalone core can build and
+advance a landscape created with `landis_build_landscape()`.
 
-## Scope
-
-- living biomass succession;
-- Ward seed dispersal;
-- stochastic establishment;
-- compact RDS snapshots and checkpoints;
-- LANDIS-II input adapter;
-- R-native input construction;
-- LANDIS-II output comparison;
-- no dead biomass pools in the beta scope;
-- no internal parallelism.
+Install `landisR.succession.biomass` for living biomass growth, Ward
+dispersal, establishment, and post-fire recruitment. Existing biomass
+project and simulation functions load the engine when they need it.
 
 ## Main API
 

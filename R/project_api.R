@@ -19,30 +19,6 @@ landisR_stop <- function(...) {
   )
 }
 
-landisR_root <- function() {
-  root <- getOption(
-    "landisR.root",
-    NULL
-  )
-
-  if (is.null(
-        root
-      )) {
-    return(
-      normalizePath(
-        getwd(),
-        winslash = "/",
-        mustWork = TRUE
-      )
-    )
-  }
-
-  normalizePath(
-    root,
-    winslash = "/",
-    mustWork = TRUE
-  )
-}
 
 landisR_scalar_integer <- function(
     x,
@@ -408,7 +384,7 @@ landisR_validate_canonical <- function(
   }
 
   canonical$species <-
-    landisR_normalize_serotiny_traits(
+    landisR_biomass_backend()$normalize_fire_traits(
       canonical$species
     )
 
@@ -845,16 +821,6 @@ landis_from_canonical <- function(
         x
       ) == 1L) {
 
-    if (!exists(
-          "bs52_read_canonical52",
-          mode = "function"
-        )) {
-      landisR_stop(
-        "bs52_read_canonical52() n'est pas charge. ",
-        "Charger R/canonical52.R."
-      )
-    }
-
     root <-
       normalizePath(
         x,
@@ -863,7 +829,7 @@ landis_from_canonical <- function(
       )
 
     canonical <-
-      bs52_read_canonical52(
+      landisR_biomass_backend()$read_canonical(
         root
       )
 
@@ -1344,41 +1310,6 @@ landis_write_canonical <- function(
   root
 }
 
-landisR_try_source <- function(
-    files) {
-
-  root <-
-    landisR_root()
-
-  for (path in files) {
-
-    candidate <-
-      if (grepl(
-            "^(?:[A-Za-z]:)?[/\\]",
-            path
-          )) {
-        path
-      } else {
-        file.path(
-          root,
-          path
-        )
-      }
-
-    if (file.exists(
-          candidate
-        )) {
-      sys.source(
-        candidate,
-        envir = .GlobalEnv
-      )
-    }
-  }
-
-  invisible(
-    NULL
-  )
-}
 
 landis_read <- function(
     source_directory,
@@ -1432,37 +1363,7 @@ landis_read <- function(
       mustWork = FALSE
     )
 
-  if (!exists(
-        "bs52_import_landis_to_r",
-        mode = "function"
-      )) {
-
-    landisR_try_source(
-      c(
-        "R/read_landis52.R",
-        "R/explicit_initial52.R",
-        "R/import_landis52.R",
-        "R/canonical52.R"
-      )
-    )
-  }
-
-  if (!exists(
-        "bs52_import_landis_to_r",
-        mode = "function"
-      ) ||
-      !exists(
-        "bs52_read_canonical52",
-        mode = "function"
-      )) {
-
-    landisR_stop(
-      "L'adaptateur LANDIS-II n'est pas disponible. ",
-      "Dans le package final, il sera inclus automatiquement. ",
-      "Dans le projet de developpement actuel, charger read_landis52.R, ",
-      "explicit_initial52.R, import_landis52.R et canonical52.R."
-    )
-  }
+  biomass <- landisR_biomass_backend()
 
   manifest <-
     file.path(
@@ -1507,7 +1408,7 @@ landis_read <- function(
       }
     }
 
-    bs52_import_landis_to_r(
+    biomass$import_landis(
       source_directory =
         source_directory,
       destination =
@@ -1519,10 +1420,7 @@ landis_read <- function(
     )
   }
 
-  canonical <-
-    bs52_read_canonical52(
-      cache_directory
-    )
+  canonical <- biomass$read_canonical(cache_directory)
 
   landisR_project(
     canonical = canonical,
@@ -1541,53 +1439,6 @@ landis_read <- function(
   )
 }
 
-landisR_load_engine <- function() {
-  if (exists(
-        "bs52_run_large_production52",
-        mode = "function"
-      )) {
-    return(
-      invisible(
-        TRUE
-      )
-    )
-  }
-
-  landisR_try_source(
-    file.path(
-      "R",
-      paste0(
-        c(
-          "biomass52",
-          "explicit_initial52",
-          "spinup52",
-          "fast52",
-          "rcpp52",
-          "simulation52",
-          "ward52",
-          "canonical52",
-          "climate52",
-          "production52",
-          "large52"
-        ),
-        ".R"
-      )
-    )
-  )
-
-  if (!exists(
-        "bs52_run_large_production52",
-        mode = "function"
-      )) {
-    landisR_stop(
-      "Le moteur large52 fige n'est pas charge."
-    )
-  }
-
-  invisible(
-    TRUE
-  )
-}
 
 landis_run <- function(
     project,
@@ -1616,7 +1467,7 @@ landis_run <- function(
     )
   }
 
-  landisR_load_engine()
+  biomass <- landisR_biomass_backend()
 
   canonical <-
     landisR_validate_canonical(
@@ -1824,20 +1675,6 @@ landis_run <- function(
         )
     )
 
-  old_working_directory <-
-    getwd()
-
-  on.exit(
-    setwd(
-      old_working_directory
-    ),
-    add = TRUE
-  )
-
-  setwd(
-    landisR_root()
-  )
-
   dir.create(
     output_directory,
     recursive = TRUE,
@@ -1866,7 +1703,7 @@ landis_run <- function(
 
   result <-
     tryCatch(
-      bs52_run_large_production52(
+      biomass$run_production(
         scenario
       ),
       error = function(e) {
@@ -1957,127 +1794,6 @@ print.landisR_run <- function(
   invisible(
     x
   )
-}
-
-
-# ==============================================================================
-# Beta.2 technical compatibility hotfix
-#
-# v3.12 changed bs52_large_atomic_save52() from logical compression
-# (TRUE/FALSE) to named modes ("gzip1", "gzip", "none").
-# The canonical-cache helper still used the old `compress = FALSE` call.
-#
-# This override changes ONLY that storage argument to `compress = "none"`.
-# The frozen growth/Ward/scientific engine is not modified.
-# ==============================================================================
-
-bs52_large_read_canonical_cached52 <- function(
-    inputs,
-    cache_file = NULL) {
-
-  inputs <-
-    normalizePath(
-      inputs,
-      winslash = "/",
-      mustWork = TRUE
-    )
-
-  if (is.null(
-        cache_file
-      )) {
-    return(
-      bs52_read_canonical52(
-        inputs
-      )
-    )
-  }
-
-  cache_file <-
-    normalizePath(
-      cache_file,
-      winslash = "/",
-      mustWork = FALSE
-    )
-
-  signature <-
-    bs52_large_input_signature52(
-      inputs
-    )
-
-  if (file.exists(
-        cache_file
-      )) {
-
-    cache <-
-      readRDS(
-        cache_file
-      )
-
-    if (is.list(
-          cache
-        ) &&
-        identical(
-          cache$format,
-          "landisR52/canonical-cache-v1"
-        ) &&
-        identical(
-          cache$source,
-          inputs
-        ) &&
-        identical(
-          cache$signature,
-          signature
-        ) &&
-        is.list(
-          cache$canonical
-        )) {
-
-      message(
-        "Cache canonique reutilise : ",
-        cache_file
-      )
-
-      return(
-        cache$canonical
-      )
-    }
-
-    message(
-      "Cache canonique obsolete; reconstruction."
-    )
-  }
-
-  message(
-    "Lecture CSV canonique et creation du cache binaire..."
-  )
-
-  canonical <-
-    bs52_read_canonical52(
-      inputs
-    )
-
-  bs52_large_atomic_save52(
-    list(
-      format =
-        "landisR52/canonical-cache-v1",
-      source =
-        inputs,
-      signature =
-        signature,
-      canonical =
-        canonical
-    ),
-    cache_file,
-    compress = "none",
-    overwrite = TRUE
-  )
-
-  message(
-    "Cache canonique cree : ",
-    cache_file
-  )
-
-  canonical
 }
 
 

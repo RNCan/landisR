@@ -1,14 +1,15 @@
 \name{landisR-package}
 \alias{landisR-package}
 \alias{landisR}
-\title{landisR: Living Biomass Succession Engine}
+\title{landisR: Landscape Simulation Core}
 \description{
-A scientifically validated beta implementation of living-biomass succession
-for LANDIS-II compatible and independent R workflows.
+Manages the landscape grid, shared cohort state, simulation clock,
+extensions, and persistent runs.
 }
 \details{
-The beta scope includes living biomass, Ward seed dispersal, stochastic
-establishment, compact outputs, LANDIS-II input adaptation, and R-native
-project construction. Dead pools are outside the beta scope.
+\code{landis_build_landscape()} and \code{landis_sim()} run a landscape
+with the extensions selected by the user. Projects using the living
+biomass engine require \pkg{landisR.succession.biomass}. The core loads
+that package when a biomass project or simulation uses its services.
 }
 \docType{package}

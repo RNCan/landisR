@@ -5,6 +5,7 @@ importFrom(utils, head, tail, type.convert)
 
 export(landis_read)
 export(landis_build)
+export(landis_build_landscape)
 export(landis_from_canonical)
 export(landis_write_canonical)
 export(landis_run)
@@ -37,3 +38,8 @@ export(landis_extension)
 export(landis_sim)
 
 export(landis_fire_history)
+
+export(landis_succession_services)
+
+export(landis_csr)
+export(landis_apply_cohort_batch)

@@ -1,25 +1,45 @@
 # Orchestration of external extensions on the interactive forest state.
 landis_extension <- function(step, initialize = function(simulation) NULL,
-                             phase = c("before_succession", "after_succession"),
-                             type = c("disturbance", "output")) {
+                             phase = c("before_succession", "after_succession", "succession"),
+                             type = c("disturbance", "output", "succession")) {
   if (!is.function(step) || !is.function(initialize))
     stop("step et initialize doivent \xeatre des fonctions.", call. = FALSE)
   type <- match.arg(type)
-  phase <- if (missing(phase) && type == "output") "after_succession" else match.arg(phase)
+  phase <- if (missing(phase)) landisR_extension_phase(type) else match.arg(phase)
   landisR_check_extension_phase(phase, type)
   structure(list(step = step, initialize = initialize, phase = phase, type = type),
             class = "landisR_extension")
 }
 
+landisR_extension_phase <- function(type) {
+  if (!is.character(type) || length(type) != 1L) return(NULL)
+  switch(type, disturbance = "before_succession", output = "after_succession",
+         succession = "succession")
+}
+
 landisR_check_extension_phase <- function(phase, type) {
-  expected <- if (identical(type, "output")) "after_succession" else "before_succession"
-  if (!identical(phase, expected))
-    stop("Disturbances must run before succession. Output extensions use type = 'output' after succession.",
+  expected <- landisR_extension_phase(type)
+  if (is.null(expected) || !identical(phase, expected))
+    stop("Disturbances must run before succession. Output extensions use type = 'output' after succession. Succession extensions use phase = 'succession'.",
          call. = FALSE)
 }
 
+landisR_extension_phases <- function(extensions, simulation) {
+  phases <- vapply(extensions, function(extension) {
+    landisR_check_extension_phase(extension$phase, extension$type)
+    extension$phase
+  }, character(1L))
+  succession <- sum(phases == "succession")
+  if (succession > 1L ||
+      (succession == 1L && !inherits(simulation$project, "landisR_landscape_project")))
+    stop("Use one external succession extension with a project built by landis_build_landscape().",
+         call. = FALSE)
+  phases
+}
+
 landis_sim <- function(x, steps = NULL, extensions = NULL, seed = 4357L, ...) {
-  if (inherits(x, "landisR_coupled_run")) {
+  resuming <- inherits(x, "landisR_coupled_run")
+  if (resuming) {
     if (!is.null(extensions) || !missing(seed) || ...length())
       stop("Pour reprendre un run, fournir uniquement x et steps.", call. = FALSE)
     run <- x
@@ -37,8 +57,7 @@ landis_sim <- function(x, steps = NULL, extensions = NULL, seed = 4357L, ...) {
         (is.null(ids) || anyNA(ids) || any(!nzchar(ids)) || anyDuplicated(ids) ||
          !all(vapply(extensions, inherits, logical(1L), "landisR_extension")))))
       stop("extensions doit \xeatre une liste nomm\xe9e d'objets landis_extension().", call. = FALSE)
-    for (extension in extensions)
-      landisR_check_extension_phase(extension$phase, extension$type)
+    phases <- landisR_extension_phases(extensions, simulation)
     run <- structure(list(simulation = simulation, extensions = extensions,
                           extension_states = lapply(extensions, function(e) e$initialize(simulation)),
                           events = lapply(extensions, function(e) list())),
@@ -53,22 +72,19 @@ landis_sim <- function(x, steps = NULL, extensions = NULL, seed = 4357L, ...) {
       steps != trunc(steps) || steps < 0 || steps > remaining)
     stop("steps doit \xeatre un entier dans la dur\xe9e restante du projet.", call. = FALSE)
 
-  phases <- vapply(run$extensions, function(e) {
-    landisR_check_extension_phase(e$phase, e$type)
-    e$phase
-  }, character(1L))
-  before <- names(phases)[phases == "before_succession"]
-  after <- names(phases)[phases == "after_succession"]
+  if (resuming) phases <- landisR_extension_phases(run$extensions, simulation)
+  phase_order <- c("before_succession", "succession", "after_succession")
+  ids_by_phase <- split(as.character(names(phases)), factor(phases, levels = phase_order))
+  succession <- ids_by_phase[["succession"]]
   for (i in seq_len(steps)) {
     year <- as.integer(simulation$year + canonical$timestep)
-    for (phase in c("before", "after")) {
-      if (phase == "after") simulation <- landis_step(simulation)
-      for (id in if (phase == "before") before else after) {
+    for (phase in phase_order) {
+      for (id in ids_by_phase[[phase]]) {
         result <- run$extensions[[id]]$step(simulation, run$extension_states[[id]], year)
         if (!is.list(result) || !all(c("simulation", "state") %in% names(result)))
           stop("L'extension ", id, " doit retourner simulation et state.", call. = FALSE)
         updated <- landisR_validate_simulation(result$simulation)
-        if (phase == "after" && !identical(updated, simulation))
+        if (phase == "after_succession" && !identical(updated, simulation))
           stop("Output extension ", id, " changed the simulation.", call. = FALSE)
         if (!identical(updated$year, simulation$year) ||
             !identical(updated$ctx$ids, simulation$ctx$ids) ||
@@ -77,10 +93,14 @@ landis_sim <- function(x, steps = NULL, extensions = NULL, seed = 4357L, ...) {
             !identical(updated$project$canonical$cell_length, canonical$cell_length) ||
             !identical(updated$project$canonical$timestep, canonical$timestep) ||
             !identical(updated$project$canonical$duration, canonical$duration))
-          stop("L'extension ", id, " a modifi\xe9 l'horloge ou la grille active.", call. = FALSE)
+          stop("L'extension ", id, " a modifi\u00e9 l'horloge ou la grille active.", call. = FALSE)
         simulation <- updated
         run$extension_states[id] <- list(result$state)
         if (!is.null(result$events)) run$events[[id]][as.character(year)] <- list(result$events)
+      }
+      if (phase == "succession") {
+        simulation <- if (length(succession)) landisR_advance_landscape(simulation, succession)
+                      else landis_step(simulation)
       }
     }
   }
