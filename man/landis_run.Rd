@@ -9,7 +9,8 @@ landis_run(project, duration = NULL, seed = 4357L, output_directory,
   cache_directory = NULL, rng_chunk_cells = 100000L)
 }
 \description{
-Run the frozen beta living-biomass succession engine from a landisR project.
+Run the living-biomass succession engine from a landisR project.
+This function requires the installed package \pkg{landisR.succession.biomass}.
 }
 \arguments{
   \item{project}{A landisR project.}

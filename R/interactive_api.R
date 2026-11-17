@@ -234,6 +234,13 @@ landis_initialize <- function(
     rng_chunk_cells = 100000L,
     recruitment_rng = c("analytical", "landis_v7")) {
 
+  if (inherits(project, "landisR_landscape_project")) {
+    if (!missing(growth_engine) || !missing(dispersal) || !missing(ward_variant) ||
+        !missing(rng_chunk_cells) || !missing(recruitment_rng))
+      landisR_stop("Biomass Succession settings require a project built with landis_build().")
+    return(landisR_initialize_landscape(project, seed))
+  }
+
   recruitment_rng <- match.arg(recruitment_rng)
   if (recruitment_rng == "landis_v7" && !identical(dispersal, "ward"))
     landisR_stop("recruitment_rng = 'landis_v7' requires Ward dispersal.")
@@ -247,7 +254,7 @@ landis_initialize <- function(
     )
   }
 
-  landisR_load_engine()
+  biomass <- landisR_biomass_backend()
 
   growth_engine <-
     landisR_validate_growth_engine(
@@ -300,9 +307,7 @@ landis_initialize <- function(
   }
 
   ctx <-
-    bs52_large_context52(
-      canonical
-    )
+    biomass$context(canonical, v7 = recruitment_rng == "landis_v7")
 
   out <-
     list(
@@ -365,7 +370,6 @@ landis_initialize <- function(
     )
 
   if (recruitment_rng == "landis_v7") {
-    out$ctx <- bs52_ward531_context(ctx)
     out$landis_rng <- list(state = landis_mt19937_init_cpp(seed), offset = 0)
   }
 
@@ -506,100 +510,8 @@ landisR_step_biomass52 <- function(
     )
   }
 
-  checkpoint <-
-    bs52_large_checkpoint52(
-      simulation$year,
-      simulation$states,
-      simulation$state_eco,
-      simulation$cell_state,
-      simulation$rng_state,
-      simulation$session_signature
-    )
-
-  result <-
-    bs52_run_large_landscape52(
-      ctx =
-        simulation$ctx,
-      duration =
-        end_year,
-      seed =
-        simulation$seed,
-      engine =
-        "Rcpp",
-      dispersal =
-        simulation$dispersal,
-      ward_variant =
-        simulation$ward_variant,
-      output_years =
-        sort(
-          unique(
-            c(
-              0L,
-              end_year
-            )
-          )
-        ),
-      checkpoint_every =
-        timestep,
-      output_directory =
-        NULL,
-      run_signature =
-        simulation$session_signature,
-      resume_checkpoint =
-        checkpoint,
-      collect_snapshots =
-        TRUE,
-      rng_chunk_cells =
-        simulation$rng_chunk_cells,
-      snapshot_compression =
-        "gzip1",
-      checkpoint_compression =
-        "gzip1",
-      establishment = simulation$establishment,
-      landis_rng = simulation$landis_rng
-    )
-
-  if (!is.null(simulation$establishment$planting)) {
-    simulation$establishment$planting <- NULL
-    if (!length(simulation$establishment$excluded_cells))
-      simulation$establishment <- NULL
-  }
-  simulation$states <-
-    result$states
-
-  simulation$state_eco <-
-    as.integer(
-      result$state_eco
-    )
-
-  simulation$cell_state <-
-    as.integer(
-      result$cell_state
-    )
-
-  simulation$rng_state <-
-    result$final_rng_state
-  simulation$landis_rng <- result$landis_rng
-
-  simulation$year <-
-    end_year
-
-  if (nrow(
-        result$profile
-      )) {
-
-    simulation$profile <-
-      if (!nrow(
-            simulation$profile
-          )) {
-        result$profile
-      } else {
-        rbind(
-          simulation$profile,
-          result$profile
-        )
-      }
-  }
+  simulation <- landisR_biomass_backend()$step(simulation, end_year)
+  simulation$year <- end_year
 
   simulation$history[[length(simulation$history) + 1L]] <-
     landisR_event(
@@ -647,6 +559,10 @@ landis_step <- function(
         landisR_step_biomass52(
           simulation
         )
+
+    } else if (inherits(simulation$project, "landisR_landscape_project")) {
+
+      simulation <- landisR_advance_landscape(simulation)
 
     } else {
 
@@ -1129,15 +1045,15 @@ landisR_load_run_context <- function(
         existing_canonical
       )) {
 
-    landisR_load_engine()
+    biomass <- landisR_biomass_backend()
 
     canonical <-
-      bs52_read_canonical52(
+      biomass$read_canonical(
         existing_canonical[1L]
       )
 
     return(
-      bs52_large_context52(
+      biomass$context(
         canonical
       )
     )
@@ -1620,15 +1536,6 @@ landisR_state_run <- function(
       selected_ids,
       active_ids
     )
-
-  landisR_load_engine()
-
-  if (exists(
-        "bs52_large_init_bulk52",
-        mode = "function"
-      )) {
-    bs52_large_init_bulk52()
-  }
 
   states <-
     bs52_csr_to_states_cpp(
@@ -2747,12 +2654,7 @@ landisR_rebind_project <- function(
     )
 
   new_ctx <-
-    bs52_large_context52(
-      project$canonical
-    )
-
-  if (!is.null(simulation$landis_rng))
-    new_ctx <- bs52_ward531_context(new_ctx)
+    landisR_biomass_backend()$context(project$canonical, v7 = !is.null(simulation$landis_rng))
 
   pair_key <-
     paste(
@@ -3402,6 +3304,8 @@ landis_apply <- function(
         0L
 
   if (project_change) {
+    if (inherits(simulation$project, "landisR_landscape_project"))
+      landisR_stop("Landscape-only projects support cohort updates through landis_apply().")
 
     project <-
       landisR_project_from_update(
@@ -3536,15 +3440,15 @@ landisR_load_run_context <- function(run) {
         existing_canonical
       )) {
 
-    landisR_load_engine()
+    biomass <- landisR_biomass_backend()
 
     canonical <-
-      bs52_read_canonical52(
+      biomass$read_canonical(
         existing_canonical[1L]
       )
 
     return(
-      bs52_large_context52(
+      biomass$context(
         canonical
       )
     )

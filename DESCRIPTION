@@ -1,25 +1,17 @@
 Package: landisR
 Type: Package
-Title: Living Biomass Succession Engine Compatible with LANDIS-II
-        Workflows
-Version: 0.1.0.9008
+Title: LANDIS Simulation Core and Shared Forest State
+Version: 0.1.0.9011
 Authors@R: person("Yan", "Boulanger", email = "landisR-maintainer@example.invalid", role = c("aut", "cre"))
-Description: Experimental R and Rcpp implementation of living-biomass succession processes designed for LANDIS-II Biomass Succession comparison and independent
-                  simulation workflows. The validated beta provides deterministic growth and mortality, Ward seed dispersal, stochastic establishment, compact
-                  state-compressed outputs, LANDIS-II input adapters, and direct R-native project construction.
+Description: Provides the cell grid, compact forest state, simulation clock, extension orchestration and persistence for LANDIS simulations in R. The optional Biomass
+                  Succession package provides the biological engine.
 License: file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.3.0)
 Imports: Rcpp
 LinkingTo: Rcpp
-Suggests: terra, testthat (>= 3.0.0), rmarkdown
+Suggests: landisR.succession.biomass (>= 0.1.0.9000), terra, testthat (>= 3.0.0), rmarkdown
 Config/testthat/edition: 3
 NeedsCompilation: yes
-Collate: 'biomass52.R' 'explicit_initial52.R' 'spinup52.R' 'fast52.R'
-        'rcpp52.R' 'simulation52.R' 'ward52.R' 'canonical52.R'
-        'climate52.R' 'production52.R' 'read_landis52.R'
-        'import_landis52.R' 'large52.R' 'run_persistence.R'
-        'project_api.R' 'establishment.R' 'ward531.R'
-        'interactive_api.R' 'serotiny_api.R' 'map_api.R'
-        'coupling_api.R' 'sim_api.R' 'RcppExports.R'
-        'zzz_package_runtime.R' 'zzzz_270F_permanent.R'
+Collate: 'run_persistence.R' 'project_api.R' 'establishment.R' 'interactive_api.R' 'landscape_api.R' 'serotiny_api.R' 'map_api.R' 'coupling_api.R' 'sim_api.R'
+                  'csr_persistence.R' 'disturbance_api.R' 'succession_api.R' 'RcppExports.R' 'zzzz_270F_permanent.R'
