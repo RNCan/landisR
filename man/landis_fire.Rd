@@ -109,6 +109,9 @@ state.
 The updated \code{landisR_simulation}. The simulation history receives a
 \code{"fire"} event containing the affected cells, severity metadata,
 serotinous source counts, recruited-cell count, and recruited-cohort count.
+\code{landis_fire_history()} returns a sparse data frame of burned cell IDs
+and their most recent positive fire year, or \code{NULL} before any such
+record is available.
 }
 \seealso{
 \code{\link{landis_initialize}}, \code{\link{landis_step}},
@@ -139,6 +142,8 @@ sim <- landis_fire(
   update = landis_update(clear_cells = burned_cells),
   severity = 5
 )
+
+landis_fire_history(sim)
 
 # Continue succession normally.
 sim <- landis_step(sim)

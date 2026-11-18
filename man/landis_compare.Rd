@@ -21,3 +21,13 @@ Compare compact landisR snapshots with LANDIS-II biomass and AGE-MAX TIFFs.
 }
 \value{A \code{landisR_comparison} object.}
 \note{The optional package terra is required to read LANDIS-II TIFF files.}
+
+\examples{
+\dontrun{
+# Set the directories to matching runs of the same input project.
+project <- landis_read("inputs")
+comparison <- landis_compare("outputs/landisR", "outputs/LANDIS-II",
+  project, years = c(10L, 20L), orientation = "auto")
+print(comparison)
+}
+}

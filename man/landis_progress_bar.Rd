@@ -21,3 +21,16 @@ helper temporarily enables reports for a single native operation.}
 \code{landis_progress_bar()}. The unmodified value of \code{code} from
 \code{landis_progress_native()}.}
 \keyword{internal}
+
+\examples{
+bar <- landis_progress_bar(TRUE, "Example")
+bar$update(0.5, "Preparing cells")
+bar$close()
+
+# Demonstrate how native fractions map into the current phase.
+report <- function(fraction, label) message(label, " ", fraction)
+landis_progress_native(report, from = 0.2, to = 0.6, code = {
+  getOption("landisR.progress.native")(0.5, "Halfway through phase")
+  42L
+})
+}

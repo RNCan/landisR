@@ -26,3 +26,13 @@ and per active cell. \code{species} catalog entries are in species ID
 order. \code{nrow}, \code{ncol}, and \code{cell_length} describe the
 grid. Cell length is in metres.
 }
+
+\examples{
+grid <- data.frame(cell_id = 1:2, row = 1L, col = 1:2, active = TRUE)
+project <- landis_build_landscape(grid, duration = 20L, cell_length = 100,
+  species = data.frame(species = "PINE"))
+sim <- landis_initialize(project)
+forest <- landis_csr(sim)
+forest$cell_id
+forest$states$offset
+}

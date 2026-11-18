@@ -11,3 +11,8 @@ A named list of functions for encoding and updating cohort state,
 building snapshots and checkpoints, and writing compact RDS outputs.
 }
 \keyword{internal}
+
+\examples{
+services <- landis_succession_services()
+names(services)
+}

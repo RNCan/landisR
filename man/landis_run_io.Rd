@@ -47,8 +47,8 @@ sim <- landis_run(
   output_directory = "outputs/baseline"
 )
 
-# Written automatically by landis_run():
-# outputs/baseline/landisR_run.rds
+# Copy the descriptor under a second name in the run folder.
+landis_save_run(sim, filename = "baseline_descriptor.rds")
 
 sim2 <- landis_load_run("outputs/baseline")
 }

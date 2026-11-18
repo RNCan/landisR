@@ -27,3 +27,15 @@ determining which edits can be computed from the same starting state and
 combining their replacements. Apply dependent edits in sequence.
 }
 \value{The updated simulation.}
+
+\examples{
+grid <- data.frame(cell_id = 1:2, row = 1L, col = 1:2, active = TRUE)
+project <- landis_build_landscape(grid, duration = 20L, cell_length = 100,
+  species = data.frame(species = "PINE"))
+sim <- landis_initialize(project)
+cohorts <- data.frame(cell_id = 1L, species = "PINE", age = 30L,
+  biomass = 100)
+sim <- landis_apply_cohort_batch(sim, cohorts,
+  event_metadata = list(list(operation = "initial inventory")))
+landis_state(sim, representation = "cohorts")
+}

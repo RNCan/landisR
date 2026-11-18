@@ -32,8 +32,9 @@ Requirements are stable capability identifiers such as
 \code{"engine_input.sep"}.
 }
 \arguments{
-  \item{x}{A \code{landisR_simulation}, \code{landisR_growth_engine}, or
-  \code{landisR_capabilities} where supported.}
+  \item{x}{A Biomass Succession simulation or growth-engine descriptor.
+  \code{landis_supports()} also accepts an existing
+  \code{landisR_capabilities} object.}
   \item{requirements}{Character vector of capability identifiers.}
   \item{all}{If \code{TRUE}, require all capabilities; otherwise require any.}
   \item{fun}{Arbitrary R process function.}
@@ -48,4 +49,19 @@ Requirements are stable capability identifiers such as
 \code{landis_capabilities()} returns a \code{landisR_capabilities} object.
 \code{landis_supports()} returns a logical value.
 \code{landis_modifier()} returns a callable \code{landisR_modifier}.
+}
+
+\examples{
+engine <- landis_growth_biomass52()
+capabilities <- landis_capabilities(engine)
+landis_supports(capabilities, "state.cohorts")
+
+clear_first_cell <- landis_modifier(
+  function(state) landis_update(clear_cells = 1L),
+  name = "clear cell 1", requires = "state.cohorts", state = "cohorts"
+)
+\dontrun{
+# Use a Biomass Succession simulation with cell 1 active.
+sim <- landis_apply(sim, clear_first_cell)
+}
 }

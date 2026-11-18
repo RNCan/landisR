@@ -91,4 +91,19 @@ validation.
 \code{landis_initialize()}, \code{landis_step()} and \code{landis_apply()}
 return a \code{landisR_simulation}. \code{landis_state()} returns a state
 representation. \code{landis_update()} returns a \code{landisR_update}.
+\code{landis_growth_biomass52()} returns a \code{landisR_growth_engine}
+descriptor for the living-biomass engine.
+}
+
+\examples{
+grid <- data.frame(cell_id = 1:2, row = 1L, col = 1:2, active = TRUE)
+project <- landis_build_landscape(grid, duration = 20L, cell_length = 100,
+  species = data.frame(species = "PINE"))
+engine <- landis_growth_biomass52()
+sim <- landis_initialize(project)
+edit <- landis_update(cohorts = data.frame(cell_id = 1L,
+  species = "PINE", age = 30L, biomass = 100))
+sim <- landis_apply(sim, edit)
+sim <- landis_step(sim, steps = 1L, progress = FALSE)
+landis_state(sim, representation = "cohorts", cells = 1L)
 }

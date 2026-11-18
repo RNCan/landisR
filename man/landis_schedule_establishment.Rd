@@ -18,3 +18,14 @@ probability in the cell's ecoregion. Successful planting takes priority over nat
 for that step. Exclusion takes priority over planting.
 }
 \value{The interactive simulation with its pending directives and persistent exclusions.}
+
+\examples{
+\dontrun{
+# Use a biomass project with PICE.MAR in its species catalog.
+sim <- landis_initialize(landis_from_canonical("inputs/canonical"))
+ids <- landis_csr(sim)$cell_id
+plant <- data.frame(cell_id = ids[1L], species = "PICE.MAR")
+sim <- landis_schedule_establishment(sim, planting = plant, exclude = ids[2L])
+sim <- landis_step(sim, progress = FALSE)
+}
+}

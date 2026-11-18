@@ -61,3 +61,19 @@ restarted with descriptors that use the new order.
 \code{events} indexed by extension name and target year. Pass this result
 back to \code{landis_sim()} to continue with the saved states and journals.
 }
+
+\examples{
+grid <- data.frame(cell_id = 1:2, row = 1L, col = 1:2, active = TRUE)
+project <- landis_build_landscape(grid, duration = 20L, cell_length = 100,
+  species = data.frame(species = "PINE"))
+report_year <- landis_extension(
+  function(simulation, state, year) {
+    list(simulation = simulation, state = state, events = year)
+  },
+  type = "output"
+)
+first <- landis_sim(project, steps = 1L,
+  extensions = list(year = report_year), progress = FALSE)
+full <- landis_sim(first, progress = FALSE)
+full$events$year[["20"]]
+}
