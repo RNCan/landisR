@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: RNCan/landisR.succession.biomass
-          ref: 764f34810fa498345a0763bc191e71d7f5d56488
+          ref: 62e4504bbaaa0ddded55d09b1f06dff0b8797f04
           path: .github/biomass-succession
           persist-credentials: false
 

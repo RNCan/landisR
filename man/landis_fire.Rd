@@ -121,16 +121,15 @@ record is available.
 \examples{
 \dontrun{
 # Import or build a project, then configure jack pine as strictly serotinous.
-project <- landis_read(
-  source_directory = "D:/LANDIS/my_project",
-  scenario = "scenario.txt"
-)
+scenario_directory <- "D:/LANDIS/my_project"
+project <- landis_read(scenario_directory)
+succession <- landisR.succession.biomass::biomass_succession_read(scenario_directory)
 
 i <- project$canonical$species$species == "PINU.BAN"
 project$canonical$species$serotiny_type[i] <- "strict"
 project$canonical$species$serotiny_dispersal[i] <- "kernel"
 
-sim <- landis_initialize(project, seed = 4357L)
+sim <- landis_initialize(project, seed = 4357L, succession = succession)
 
 # Example severe fire. Mature seed sources are captured before cells are
 # cleared, then Ward dispersal and post-fire establishment are evaluated.
@@ -149,7 +148,7 @@ landis_fire_history(sim)
 sim <- landis_step(sim)
 
 # Diagnostic mode: every positive-probability establishment succeeds.
-sim2 <- landis_initialize(project, seed = 4357L)
+sim2 <- landis_initialize(project, seed = 4357L, succession = succession)
 sim2 <- landis_fire(
   sim2,
   cells = burned_cells,

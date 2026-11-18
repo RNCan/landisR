@@ -1,3 +1,7 @@
+# landisR 0.1.0.9017
+
+- Initialize a Biomass Succession simulation from independent landscape and succession inputs.
+
 # landisR 0.1.0.9014
 
 - Show the current year and extension in a single console progress bar for

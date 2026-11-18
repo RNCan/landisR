@@ -1,7 +1,7 @@
 Package: landisR
 Type: Package
 Title: LANDIS Simulation Core and Shared Forest State
-Version: 0.1.0.9015
+Version: 0.1.0.9017
 Authors@R: person("Yan", "Boulanger", email = "landisR-maintainer@example.invalid", role = c("aut", "cre"))
 Description: Provides the cell grid, compact forest state, simulation clock, extension orchestration and persistence for LANDIS simulations in R. The optional Biomass
                   Succession package provides the biological engine.
@@ -14,7 +14,7 @@ Suggests: landisR.succession.biomass (>= 0.1.0.9000), terra, testthat (>= 3.0.0)
 Config/testthat/edition: 3
 NeedsCompilation: yes
 Collate: 'run_persistence.R' 'project_api.R' 'establishment.R'
-        'interactive_api.R' 'landscape_api.R' 'regeneration.R'
+        'interactive_api.R' 'landscape_api.R' 'read_landscape.R' 'regeneration.R'
         'serotiny_api.R' 'map_api.R' 'coupling_api.R' 'progress.R' 'sim_api.R'
         'csr_persistence.R' 'disturbance_api.R' 'succession_api.R'
         'RcppExports.R' 'zzzz_270F_permanent.R'

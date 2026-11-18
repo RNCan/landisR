@@ -2,7 +2,8 @@
 
 The core manages the landscape grid, shared CSR cohort state, simulation
 clock, extensions, and persistence. A standalone core can build and
-advance a landscape created with `landis_build_landscape()`.
+advance a landscape created with `landis_build_landscape()` or imported
+with `landis_read()`.
 
 Install `landisR.succession.biomass` for living biomass growth, Ward
 dispersal, establishment, and post-fire recruitment. Existing biomass
@@ -13,18 +14,16 @@ project and simulation functions load the engine when they need it.
 ```r
 library(landisR)
 
-project <- landis_read("D:/LANDIS/my_project")
-
-sim <- landis_run(
-  project,
-  duration = 30,
-  seed = 4357,
-  output_directory = "outputs/my_run"
-)
+landscape <- landis_read("D:/LANDIS/my_project")
+succession <- landisR.succession.biomass::biomass_succession_read("D:/LANDIS/my_project")
+sim <- landis_initialize(landscape, succession = succession, seed = 4357L)
+run <- landis_sim(sim, steps = 3L)
 ```
 
-LANDIS-II is optional. R-native projects can be created with
-`landis_build()`.
+To run another model, use the shared landscape with an external succession
+extension in `landis_sim()`. For projects built from R tables, use
+`landis_build_landscape()` for a shared landscape or `landis_build()` for a
+Biomass Succession project.
 
 ## Validation
 

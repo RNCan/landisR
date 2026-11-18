@@ -43,7 +43,9 @@ This function requires the installed package \pkg{landisR.succession.biomass}.
 \examples{
 \dontrun{
 # Use the directory containing your LANDIS-II scenario files.
-project <- landis_read("inputs", scenario = "scenario.txt")
+landscape <- landis_read("inputs")
+succession <- landisR.succession.biomass::biomass_succession_read("inputs", scenario = "scenario.txt")
+project <- landis_initialize(landscape, succession = succession)$project
 run <- landis_run(project, output_directory = "outputs/biomass",
   output_years = c(0L, 10L, 20L), checkpoint_every = 10L, progress = FALSE)
 print(run)

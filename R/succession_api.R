@@ -27,3 +27,12 @@ landisR_biomass_backend <- function() {
     landisR_stop("Biomass Succession must provide both fire response hooks.")
   backend
 }
+
+# Dispatch on a configuration supplied by a succession package.
+landis_initialize_succession <- function(succession, project, seed, ...) {
+  UseMethod("landis_initialize_succession")
+}
+
+landis_initialize_succession.default <- function(succession, project, seed, ...) {
+  landisR_stop("No succession initializer for class ", paste(class(succession), collapse = ", "), ".")
+}

@@ -6,7 +6,7 @@
 \title{Create and materialize landisR projects}
 \usage{
 landis_read(source_directory, scenario = "scenario.txt", cache_directory = NULL,
-  prefer_cells_csv = TRUE, name = NULL)
+  prefer_cells_csv = TRUE, name = NULL, timestep = 1L)
 
 landis_build(landscape, species, species_parameters, ecoregions,
   ecoregion_parameters, dynamic, initial_cohorts, shade, light,
@@ -21,17 +21,25 @@ landis_from_canonical(x, name = "canonical_project", cache_file = NULL)
 landis_write_canonical(project, directory, overwrite = FALSE)
 }
 \description{
-Create a common landisR project from LANDIS-II inputs, R-native tables, or
-an existing canonical representation.
+Create a shared landisR landscape from LANDIS-II inputs, build a model
+project from R tables, or open an existing canonical project.
+}
+\details{
+\code{landis_read()} imports the species, ecoregions and ecoregion map,
+and reads the duration and cell length from the scenario. The succession
+extension supplies its own inputs. For Biomass Succession, pass the
+landscape and the configuration read by
+\code{landisR.succession.biomass::biomass_succession_read()} to
+\code{landis_initialize()}.
 }
 \arguments{
-  \item{source_directory}{LANDIS-II scenario working directory. Paths in
-    the scenario inputs are resolved relative to it.}
+  \item{source_directory}{Base directory for resolving the scenario path. Paths declared in the
+    scenario are resolved relative to the scenario file.}
   \item{scenario}{Scenario file path, absolute or relative to
     \code{source_directory}.}
-  \item{cache_directory}{Directory for materializing imported canonical
-    inputs. With \code{NULL}, use an automatically named cache.}
-  \item{prefer_cells_csv}{Use a compatible \file{cells.csv} if available.}
+  \item{cache_directory}{Legacy argument. Use \code{landis_from_canonical()}
+    to reopen existing canonical Biomass Succession inputs.}
+  \item{prefer_cells_csv}{Use the shared grid columns from a scenario-local \file{cells.csv} when present.}
   \item{name}{Project name. For \code{landis_read()}, \code{NULL}
     uses the name of \code{source_directory}.}
   \item{landscape}{Data frame with \code{cell_id}, \code{row}, \code{col},
@@ -64,7 +72,7 @@ an existing canonical representation.
     with \code{wood_reduction} and \code{litter_reduction}.}
   \item{duration}{Maximum simulation duration in years.}
   \item{cell_length}{Cell side length in metres.}
-  \item{timestep}{Succession timestep in years.}
+  \item{timestep}{Timestep in years. For \code{landis_read()}, the default is one year.}
   \item{seeding_algorithm}{Seeding algorithm label stored with the project.}
   \item{spinup_cohorts}{Logical value stored for the LANDIS-II
     \code{SpinupCohorts} setting. Use \code{initial_mode} to choose how
@@ -86,6 +94,7 @@ an existing canonical representation.
   \item{overwrite}{Whether to replace a non-empty destination.}
 }
 \value{
+\code{landis_read()} returns a \code{landisR_landscape_project}.
 A \code{landisR_project}, or the canonical directory path for
 \code{landis_write_canonical()}.
 }
@@ -126,6 +135,8 @@ if (requireNamespace("landisR.succession.biomass", quietly = TRUE)) {
 }
 \dontrun{
 # Import an existing LANDIS-II project instead.
-project <- landis_read("inputs", scenario = "scenario.txt")
+landscape <- landis_read("inputs", scenario = "scenario.txt")
+succession <- landisR.succession.biomass::biomass_succession_read("inputs")
+sim <- landis_initialize(landscape, succession = succession)
 }
 }

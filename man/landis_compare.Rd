@@ -25,7 +25,9 @@ Compare compact landisR snapshots with LANDIS-II biomass and AGE-MAX TIFFs.
 \examples{
 \dontrun{
 # Set the directories to matching runs of the same input project.
-project <- landis_read("inputs")
+landscape <- landis_read("inputs")
+succession <- landisR.succession.biomass::biomass_succession_read("inputs")
+project <- landis_initialize(landscape, succession = succession)$project
 comparison <- landis_compare("outputs/landisR", "outputs/LANDIS-II",
   project, years = c(10L, 20L), orientation = "auto")
 print(comparison)

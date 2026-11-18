@@ -2,17 +2,9 @@
 
 LANDIS-II is an optional adapter, not a requirement.
 
-```text
-LANDIS-II project ---- landis_read() -----------\
-R data.frames -------- landis_build() ------------> landisR_project
-canonical inputs ----- landis_from_canonical() ---/
-                                                |
-                                                v
-                                           landis_run()
-                                                |
-                                                v
-                                      frozen beta engine
-```
+Read the shared landscape with `landis_read()` and the separate Biomass
+Succession configuration with `biomass_succession_read()`. Pass both to
+`landis_initialize()` to create the initial forest state.
 
 ## Design rule
 
@@ -25,8 +17,12 @@ models, and future coupling with other models.
 ## Public entry points
 
 ### `landis_read()`
-Compatibility route for an existing LANDIS-II project. The existing LANDIS
-importer is reused and cached.
+Imports the shared landscape from a LANDIS-II scenario. Its species and
+ecoregion tables can be reused by different succession models.
+
+### `landisR.succession.biomass::biomass_succession_read()`
+Imports the Biomass Succession configuration and initial communities from
+the same scenario. Pass the configuration and landscape to `landis_initialize()`.
 
 ### `landis_build()`
 LANDIS-independent route. Accepts R tables representing the grid, initial
@@ -37,7 +33,7 @@ and related succession parameters.
 Advanced route for an already prepared canonical object or canonical directory.
 
 ### `landis_run()`
-All three routes converge here. If the project exists only in memory,
+The Biomass Succession project routes converge here. If the project exists only in memory,
 `landis_run()` materializes a canonical cache automatically before calling the
 frozen engine.
 

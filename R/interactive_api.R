@@ -233,7 +233,19 @@ landis_initialize <- function(
     ward_variant = "ward2019",
     rng_chunk_cells = 100000L,
     recruitment_rng = c("analytical", "landis_v7"),
-    regeneration_mode = c("immediate", "landis_v7")) {
+    regeneration_mode = c("immediate", "landis_v7"),
+    succession = NULL) {
+
+  if (!is.null(succession)) {
+    if (!inherits(project, "landisR_landscape_project"))
+      landisR_stop("Supply a shared landscape from landis_read() or landis_build_landscape() with succession.")
+    options <- setdiff(names(match.call()[-1L]), c("project", "seed", "succession"))
+    simulation <- do.call(landis_initialize_succession, c(
+      list(succession = succession, project = project, seed = seed),
+      mget(options, envir = environment(), inherits = FALSE)
+    ))
+    return(landisR_validate_simulation(simulation))
+  }
 
   if (inherits(project, "landisR_landscape_project")) {
     if (!missing(growth_engine) || !missing(dispersal) || !missing(ward_variant) ||

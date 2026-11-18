@@ -1,14 +1,21 @@
 # landisR beta.2 — Quick start
 
-`landisR` is a standalone R/Rcpp living-biomass succession engine. LANDIS-II is
-**optional**: a project can be created from LANDIS-II inputs, from the native
-canonical format, or directly from R tables.
+`landisR` manages the landscape and simulation. The examples below use the
+Biomass Succession model supplied by `landisR.succession.biomass`. You can
+prepare its inputs from a LANDIS-II scenario, an existing canonical cache,
+or R tables.
 
 ## 1. Install
 
 ```r
 install.packages(
-  "landisR_0.1.0.9002.tar.gz",
+  "landisR_0.1.0.9017.tar.gz",
+  repos = NULL,
+  type = "source"
+)
+
+install.packages(
+  "landisR.succession.biomass_0.1.0.9008.tar.gz",
   repos = NULL,
   type = "source"
 )
@@ -22,22 +29,19 @@ package contains C++ code.
 ## 2. Route A — Existing LANDIS-II project
 
 ```r
-project <- landis_read(
+landscape <- landis_read(
   "D:/LANDIS/my_project",
   scenario = "scenario.txt"
 )
-
-sim <- landis_run(
-  project,
-  duration = 30,
-  seed = 4357,
-  output_directory = "outputs/my_project"
-)
+succession <- landisR.succession.biomass::biomass_succession_read("D:/LANDIS/my_project")
+sim <- landis_initialize(landscape, succession = succession, seed = 4357L)
+run <- landis_sim(sim, steps = 3L)
 ```
 
-LANDIS-II itself does not have to be executed by `landisR`. `landis_read()`
-parses supported LANDIS-II inputs and converts them to the native canonical
-representation.
+`landis_read()` and `biomass_succession_read()` import their inputs
+independently. `landis_initialize()` creates the initial forest state.
+To save the assembled inputs, call `landis_write_canonical(sim$project,
+"outputs/import")`.
 
 ## 3. Route B — Existing canonical landisR inputs
 

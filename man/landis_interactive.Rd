@@ -14,7 +14,8 @@ landis_initialize(project, seed = 4357L,
   dispersal = "ward", ward_variant = "ward2019",
   rng_chunk_cells = 100000L,
   recruitment_rng = c("analytical", "landis_v7"),
-  regeneration_mode = c("immediate", "landis_v7"))
+  regeneration_mode = c("immediate", "landis_v7"),
+  succession = NULL)
 
 landis_step(simulation, steps = 1L,
   progress = getOption("landisR.progress", interactive()))
@@ -38,8 +39,12 @@ inspect the current forest, and apply compatible state or input modifications
 between timesteps.
 }
 \details{
-The interactive API is an orchestration layer around the frozen Biomass
-Succession 5.2 engine. External models do not manipulate the internal CSR state.
+When \code{succession} is supplied, \code{landis_initialize()} invokes
+the extension's initializer with the shared landscape and seed. The
+returned simulation starts with the extension's initial state. With a
+shared landscape alone, the simulation starts with an empty cohort store.
+An existing canonical Biomass Succession project already carries its
+configuration and can be initialized directly.
 
 The first interactive implementation keeps the succession timestep, cell size,
 raster geometry, active-cell set, and species registry fixed within a running
@@ -50,7 +55,10 @@ validation.
 \arguments{
   \item{preserve_cohort_order}{Keep the supplied cohort row order within each cell.}
   \item{project}{A \code{landisR_project}.}
-  \item{seed}{Random seed for the Biomass Succession process.}
+  \item{succession}{Optional configuration returned by a succession extension
+  such as \code{landisR.succession.biomass::biomass_succession_read()}.
+  Provide it with the shared landscape returned by \code{landis_read()}.}
+  \item{seed}{Random seed for the simulation.}
   \item{growth_engine}{A \code{landisR_growth_engine}.}
   \item{dispersal}{Dispersal mode.}
   \item{ward_variant}{Ward dispersal variant for the analytical engine.}

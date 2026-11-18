@@ -11,18 +11,17 @@ landis_read(
   scenario = "scenario.txt",
   cache_directory = NULL,
   prefer_cells_csv = TRUE,
-  name = NULL
+  name = NULL,
+  timestep = 1L
 )
 ```
 
-Reads a supported LANDIS-II project and converts it to a `landisR_project`.
-
-**Use when:** a LANDIS-II scenario already exists and you want to run the same
-succession inputs in `landisR`.
-
-**Returns:** a `landisR_project`.
-
-**Important:** this is an input adapter. It does not execute LANDIS-II.
+Reads the species, ecoregions, ecoregion map, duration and cell length from
+a LANDIS-II scenario. The return value is a `landisR_landscape_project`.
+The default timestep is one year and can be set for an external succession
+model. Use `landisR.succession.biomass::biomass_succession_read()` to read
+Biomass Succession inputs and `landis_initialize()` to combine them with
+the landscape.
 
 ---
 

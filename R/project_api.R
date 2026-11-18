@@ -1,15 +1,9 @@
 # ==============================================================================
 # landisR public project API - beta.2-dev
 #
-# Core design:
-#   LANDIS-II files ---- landis_read() -----------\
-#   R tables ---------- landis_build() ------------> landisR_project
-#   canonical object -- landis_from_canonical() ---/
-#                                                   |
-#                                                   v
-#                                              landis_run()
-#
-# LANDIS-II is therefore OPTIONAL. The frozen engine only sees canonical inputs.
+# landis_read() imports the shared landscape. The Biomass Succession
+# package adds its own LANDIS-II inputs, while landis_from_canonical()
+# opens an existing model project.
 # ==============================================================================
 
 landisR_stop <- function(...) {
@@ -1316,135 +1310,6 @@ landis_write_canonical <- function(
   )
 
   root
-}
-
-
-landis_read <- function(
-    source_directory,
-    scenario = "scenario.txt",
-    cache_directory = NULL,
-    prefer_cells_csv = TRUE,
-    name = NULL) {
-
-  source_directory <-
-    normalizePath(
-      source_directory,
-      winslash = "/",
-      mustWork = TRUE
-    )
-
-  if (is.null(
-        name
-      )) {
-    name <-
-      basename(
-        source_directory
-      )
-  }
-
-  if (is.null(
-        cache_directory
-      )) {
-
-    safe_name <-
-      gsub(
-        "[^A-Za-z0-9._-]+",
-        "_",
-        name
-      )
-
-    cache_directory <-
-      file.path(
-        getwd(),
-        "cache",
-        paste0(
-          "landis_import_",
-          safe_name
-        )
-      )
-  }
-
-  cache_directory <-
-    normalizePath(
-      cache_directory,
-      winslash = "/",
-      mustWork = FALSE
-    )
-
-  biomass <- landisR_biomass_backend()
-
-  manifest <-
-    file.path(
-      cache_directory,
-      "provenance",
-      "import_manifest.rds"
-    )
-
-  if (!file.exists(
-        manifest
-      )) {
-
-    if (dir.exists(
-          cache_directory
-        ) &&
-        length(
-          list.files(
-            cache_directory,
-            all.files = TRUE,
-            no.. = TRUE
-          )
-        )) {
-
-      incomplete <-
-        paste0(
-          cache_directory,
-          "_incomplete_",
-          format(
-            Sys.time(),
-            "%Y%m%d_%H%M%S"
-          )
-        )
-
-      if (!file.rename(
-            cache_directory,
-            incomplete
-          )) {
-        landisR_stop(
-          "Impossible de preserver l'import LANDIS incomplet : ",
-          cache_directory
-        )
-      }
-    }
-
-    biomass$import_landis(
-      source_directory =
-        source_directory,
-      destination =
-        cache_directory,
-      scenario =
-        scenario,
-      prefer_cells_csv =
-        prefer_cells_csv
-    )
-  }
-
-  canonical <- biomass$read_canonical(cache_directory)
-
-  landisR_project(
-    canonical = canonical,
-    source_type = "LANDIS-II",
-    source =
-      list(
-        directory =
-          source_directory,
-        scenario =
-          scenario
-      ),
-    canonical_directory =
-      cache_directory,
-    name =
-      name
-  )
 }
 
 

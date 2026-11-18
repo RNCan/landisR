@@ -5,11 +5,10 @@
 LANDIS-II is not the native data model of `landisR`. All input routes converge
 to the same canonical project representation:
 
-```text
-LANDIS-II files ---- landis_read() -----------\
-R data.frames ------ landis_build() ------------> landisR_project -> landis_run()
-canonical inputs --- landis_from_canonical() ---/
-```
+Import the shared LANDIS-II landscape and Biomass Succession configuration
+with their respective readers, then combine them with `landis_initialize()`.
+Biomass projects can also be built from R tables or opened from a canonical
+input directory.
 
 The scientific engine only consumes the canonical representation.
 
@@ -203,13 +202,15 @@ landisR52/canonical-inputs-v1
 
 ## LANDIS-II route
 
-`landis_read()` expects a supported LANDIS-II scenario directory containing a
-scenario file, normally `scenario.txt`, plus the files referenced by that
-scenario.
+`landis_read()` reads the common landscape declared in `scenario.txt`.
+It resolves the species file, ecoregion descriptions and ecoregion map
+relative to the scenario file. Pass the landscape to the succession model
+you intend to use.
 
-The beta importer supports the LANDIS-II input structures used by the validated
-6est and 5 x 5 km projects. Unsupported extensions or formats should be treated
-as unsupported rather than silently ignored.
+`landisR.succession.biomass::biomass_succession_read()` reads the Biomass
+Succession configuration and initial communities. Pass it together with
+the landscape to `landis_initialize()`. The importer supports the LANDIS-II input structures used by the
+validated 6est and 5 x 5 km projects.
 
 ## Current beta limitations
 
