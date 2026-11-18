@@ -3,7 +3,7 @@
 \title{Core services for Biomass Succession}
 \usage{landis_succession_services()}
 \description{
-Exposes the shared cohort encoding and persistence operations used by
+Exposes the shared cohort encoding, persistence and progress reporting used by
 the optional Biomass Succession engine.
 }
 \value{

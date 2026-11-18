@@ -1464,8 +1464,10 @@ landis_run <- function(
     snapshot_compression = "gzip1",
     checkpoint_compression = "gzip1",
     cache_directory = NULL,
-    rng_chunk_cells = 100000L) {
+    rng_chunk_cells = 100000L,
+    progress = getOption("landisR.progress", interactive())) {
 
+  progress <- landisR_progress_enabled(progress)
   if (!inherits(
         project,
         "landisR_project"
@@ -1635,6 +1637,7 @@ landis_run <- function(
     list(
       name =
         project$name,
+      progress = progress,
       inputs =
         canonical_directory,
       duration =

@@ -1,3 +1,9 @@
+# landisR 0.1.0.9014
+
+- Show the current year and extension in a single console progress bar for
+  coupled runs. Add the `progress` argument to `landis_sim()`,
+  `landis_step()`, and `landis_run()`.
+
 # landisR 0.1.0.9013
 
 - Optionally reuse a binary canonical input cache through landis_from_canonical().

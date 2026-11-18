@@ -540,7 +540,8 @@ landisR_step_biomass52 <- function(
 
 landis_step <- function(
     simulation,
-    steps = 1L) {
+    steps = 1L,
+    progress = getOption("landisR.progress", interactive())) {
 
   simulation <-
     landisR_validate_simulation(
@@ -554,9 +555,24 @@ landis_step <- function(
       1L
     )
 
+  label <- if (identical(simulation$growth_engine$id, "biomass52"))
+    "Biomass Succession" else "LANDIS-R"
+  bar <- landis_progress_bar(progress, label)
+  if (!is.null(bar)) {
+    on.exit(bar$close(), add = TRUE)
+    report <- function(fraction, detail)
+      bar$update((i - 1 + fraction) / steps, paste("Year", target_year, "|", detail))
+    restore <- options(landisR.progress.report = report)
+    on.exit(options(restore), add = TRUE)
+  }
   for (i in seq_len(
          steps
        )) {
+
+    if (!is.null(bar)) {
+      target_year <- simulation$year + simulation$project$canonical$timestep
+      report(0, "Starting")
+    }
 
     if (identical(
           simulation$growth_engine$id,
@@ -581,6 +597,7 @@ landis_step <- function(
     }
   }
 
+  if (!is.null(bar)) bar$update(1, paste("Complete at year", simulation$year))
   simulation
 }
 

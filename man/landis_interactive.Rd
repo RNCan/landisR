@@ -16,7 +16,8 @@ landis_initialize(project, seed = 4357L,
   recruitment_rng = c("analytical", "landis_v7"),
   regeneration_mode = c("immediate", "landis_v7"))
 
-landis_step(simulation, steps = 1L)
+landis_step(simulation, steps = 1L,
+  progress = getOption("landisR.progress", interactive()))
 
 landis_state(simulation,
   representation = c("compact", "cohorts", "biomass"),
@@ -64,6 +65,8 @@ validation.
   \item{rng_chunk_cells}{RNG chunk size used by the validated engine.}
   \item{simulation}{A \code{landisR_simulation}.}
   \item{steps}{Number of succession timesteps to advance.}
+  \item{progress}{Show a console bar when advancing the forest. By default
+  it is shown in interactive sessions.}
   \item{representation}{State representation to return.}
   \item{cells}{Optional active cell identifiers for expanded state output.}
   \item{year}{Simulation year to retrieve. For a saved \code{landisR_run}, the requested year must correspond to a compatible saved snapshot or checkpoint; \code{NULL} uses the current or latest compatible state.}

@@ -6,7 +6,8 @@ landis_run(project, duration = NULL, seed = 4357L, output_directory,
   output_years = NULL, climate = list(name = "baseline", dynamic_file = NULL),
   dispersal = "ward", ward_variant = "ward2019", checkpoint_every = 20L,
   snapshot_compression = "gzip1", checkpoint_compression = "gzip1",
-  cache_directory = NULL, rng_chunk_cells = 100000L)
+  cache_directory = NULL, rng_chunk_cells = 100000L,
+  progress = getOption("landisR.progress", interactive()))
 }
 \description{
 Run the living-biomass succession engine from a landisR project.
@@ -26,5 +27,9 @@ This function requires the installed package \pkg{landisR.succession.biomass}.
   \item{checkpoint_compression}{Checkpoint RDS compression mode.}
   \item{cache_directory}{Canonical/context cache directory.}
   \item{rng_chunk_cells}{RNG processing chunk size.}
+  \item{progress}{Show console progress during initialization, succession
+  and output writing. Defaults to display in interactive sessions.
+  Set \code{options(landisR52.progress = TRUE)} with progress enabled to
+  use detailed native growth and recruitment progress for a production run.}
 }
 \value{A \code{landisR_run} object.}

@@ -7,7 +7,8 @@ landis_succession_services <- function() {
     checkpoint = bs52_large_checkpoint52,
     write_rds = bs52_large_atomic_save52,
     state_list = landisR_state_list,
-    apply_cohorts = landisR_apply_cohorts
+    apply_cohorts = landisR_apply_cohorts,
+    progress_bar = landis_progress_bar
   )
 }
 

@@ -3,7 +3,8 @@
 \alias{landis_extension}
 \title{Run succession and external extensions on one forest state}
 \usage{
-landis_sim(x, steps = NULL, extensions = NULL, seed = 4357L, ...)
+landis_sim(x, steps = NULL, extensions = NULL, seed = 4357L, ...,
+  progress = getOption("landisR.progress", interactive()))
 
 landis_extension(
   step,
@@ -20,6 +21,13 @@ landis_extension(
   \item{extensions}{Named list of extensions when starting a run.}
   \item{seed, ...}{Arguments passed to \code{landis_initialize()} when
   \code{x} is a project.}
+  \item{progress}{Show a single console bar with the year, extension and
+  operation in progress. The total counts simulation steps and the work
+  within their extensions. The extension percentage advances within major
+  native loops using actual processed units. This is not an estimate of
+  time remaining. Defaults to display in interactive sessions. Set
+  \code{landisR.progress} for the session or pass a logical value per call,
+  including when resuming a saved run.}
   \item{step}{Function of \code{simulation}, \code{state} and \code{year}.
   Return a list with \code{simulation}, \code{state}, and optionally
   \code{events}. The extension must preserve the clock and active grid.}
