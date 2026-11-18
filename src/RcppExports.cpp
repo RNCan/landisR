@@ -103,6 +103,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// landis_removed_cohorts_cpp
+DataFrame landis_removed_cohorts_cpp(const List& before, const List& after, const IntegerVector& before_cells, const IntegerVector& after_cells, const IntegerVector& active, const IntegerVector& disturbed);
+RcppExport SEXP _landisR_landis_removed_cohorts_cpp(SEXP beforeSEXP, SEXP afterSEXP, SEXP before_cellsSEXP, SEXP after_cellsSEXP, SEXP activeSEXP, SEXP disturbedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const List& >::type before(beforeSEXP);
+    Rcpp::traits::input_parameter< const List& >::type after(afterSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type before_cells(before_cellsSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type after_cells(after_cellsSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type active(activeSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type disturbed(disturbedSEXP);
+    rcpp_result_gen = Rcpp::wrap(landis_removed_cohorts_cpp(before, after, before_cells, after_cells, active, disturbed));
+    return rcpp_result_gen;
+END_RCPP
+}
 // landis_mt19937_init_cpp
 std::string landis_mt19937_init_cpp(double seed);
 RcppExport SEXP _landisR_landis_mt19937_init_cpp(SEXP seedSEXP) {
@@ -122,6 +137,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_landisR_bs52_csr_to_states_cpp", (DL_FUNC) &_landisR_bs52_csr_to_states_cpp, 2},
     {"_landisR_bs52_state_snapshot_csr_cpp", (DL_FUNC) &_landisR_bs52_state_snapshot_csr_cpp, 2},
     {"_landisR_bs52_csr_diagnostics_cpp", (DL_FUNC) &_landisR_bs52_csr_diagnostics_cpp, 1},
+    {"_landisR_landis_removed_cohorts_cpp", (DL_FUNC) &_landisR_landis_removed_cohorts_cpp, 6},
     {"_landisR_landis_mt19937_init_cpp", (DL_FUNC) &_landisR_landis_mt19937_init_cpp, 1},
     {NULL, NULL, 0}
 };

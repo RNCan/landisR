@@ -16,7 +16,7 @@ landis_build(landscape, species, species_parameters, ecoregions,
   initial_mode = c("explicit_biomass", "age_spinup"),
   community_codes = NULL, name = "custom_project")
 
-landis_from_canonical(x, name = "canonical_project")
+landis_from_canonical(x, name = "canonical_project", cache_file = NULL)
 
 landis_write_canonical(project, directory, overwrite = FALSE)
 }
@@ -49,6 +49,10 @@ an existing canonical representation.
   \item{initial_mode}{Explicit biomass or age-spinup initialization.}
   \item{community_codes}{Optional explicit set of community map codes.}
   \item{x}{Canonical object or canonical directory.}
+  \item{cache_file}{Optional path to a dedicated binary RDS cache when
+    \code{x} is a directory. The cache is populated on first use and rebuilt
+    when canonical CSV inputs or the reader version change. Requires a
+    Biomass Succession provider that supports binary caching.}
   \item{project}{A landisR project.}
   \item{directory}{Destination canonical directory.}
   \item{overwrite}{Whether to replace a non-empty destination.}

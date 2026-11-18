@@ -13,7 +13,8 @@ landis_initialize(project, seed = 4357L,
   growth_engine = landis_growth_biomass52(),
   dispersal = "ward", ward_variant = "ward2019",
   rng_chunk_cells = 100000L,
-  recruitment_rng = c("analytical", "landis_v7"))
+  recruitment_rng = c("analytical", "landis_v7"),
+  regeneration_mode = c("immediate", "landis_v7"))
 
 landis_step(simulation, steps = 1L)
 
@@ -57,6 +58,9 @@ validation.
   sequential Ward draw order in Biomass Succession 5.3.1 and stores the
   LANDIS-II MT19937 state in the simulation. Use with \code{dispersal = "ward"}.
   A compatible Harvest extension uses that same stream.}
+  \item{regeneration_mode}{Use \code{"landis_v7"} with the v7 RNG and a
+  compatible Biomass Succession provider to schedule serotiny and resprouting
+  from disturbance mortality for the reproduction phase.}
   \item{rng_chunk_cells}{RNG chunk size used by the validated engine.}
   \item{simulation}{A \code{landisR_simulation}.}
   \item{steps}{Number of succession timesteps to advance.}

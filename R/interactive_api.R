@@ -232,16 +232,20 @@ landis_initialize <- function(
     dispersal = "ward",
     ward_variant = "ward2019",
     rng_chunk_cells = 100000L,
-    recruitment_rng = c("analytical", "landis_v7")) {
+    recruitment_rng = c("analytical", "landis_v7"),
+    regeneration_mode = c("immediate", "landis_v7")) {
 
   if (inherits(project, "landisR_landscape_project")) {
     if (!missing(growth_engine) || !missing(dispersal) || !missing(ward_variant) ||
-        !missing(rng_chunk_cells) || !missing(recruitment_rng))
+        !missing(rng_chunk_cells) || !missing(recruitment_rng) || !missing(regeneration_mode))
       landisR_stop("Biomass Succession settings require a project built with landis_build().")
     return(landisR_initialize_landscape(project, seed))
   }
 
   recruitment_rng <- match.arg(recruitment_rng)
+  regeneration_mode <- match.arg(regeneration_mode)
+  if (regeneration_mode == "landis_v7" && recruitment_rng != "landis_v7")
+    landisR_stop("regeneration_mode = 'landis_v7' requires recruitment_rng = 'landis_v7'.")
   if (recruitment_rng == "landis_v7" && !identical(dispersal, "ward"))
     landisR_stop("recruitment_rng = 'landis_v7' requires Ward dispersal.")
 
@@ -255,6 +259,8 @@ landis_initialize <- function(
   }
 
   biomass <- landisR_biomass_backend()
+  if (regeneration_mode == "landis_v7" && !isTRUE(biomass$deferred_regeneration))
+    landisR_stop("Deferred regeneration requires a compatible Biomass Succession provider.")
 
   growth_engine <-
     landisR_validate_growth_engine(
@@ -372,6 +378,8 @@ landis_initialize <- function(
   if (recruitment_rng == "landis_v7") {
     out$landis_rng <- list(state = landis_mt19937_init_cpp(seed), offset = 0)
   }
+
+  if (regeneration_mode == "landis_v7") out$regeneration_mode <- regeneration_mode
 
   class(
     out

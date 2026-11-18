@@ -29,6 +29,10 @@ bs52_csr_diagnostics_cpp <- function(store) {
     .Call(`_landisR_bs52_csr_diagnostics_cpp`, store)
 }
 
+landis_removed_cohorts_cpp <- function(before, after, before_cells, after_cells, active, disturbed) {
+    .Call(`_landisR_landis_removed_cohorts_cpp`, before, after, before_cells, after_cells, active, disturbed)
+}
+
 landis_mt19937_init_cpp <- function(seed) {
     .Call(`_landisR_landis_mt19937_init_cpp`, seed)
 }

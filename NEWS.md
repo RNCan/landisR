@@ -1,3 +1,7 @@
+# landisR 0.1.0.9013
+
+- Optionally reuse a binary canonical input cache through landis_from_canonical().
+
 # landisR 0.1.0-beta.2
 
 - First scientifically validated beta package.

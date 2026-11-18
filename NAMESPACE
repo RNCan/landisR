@@ -43,3 +43,5 @@ export(landis_succession_services)
 
 export(landis_csr)
 export(landis_apply_cohort_batch)
+export(landis_deferred_regeneration)
+export(landis_schedule_regeneration)

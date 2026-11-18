@@ -50,13 +50,25 @@ landis_fire <- function(simulation,
 
   # The engine observes the forest before mortality but recruits into the
   # forest after mortality, at the original position of the relevant RNG.
-  hooks <- if (identical(simulation$growth_engine$id, "biomass52"))
+  defer <- landis_deferred_regeneration(simulation)
+  if (defer) {
+    before_states <- simulation$states
+    before_cells <- simulation$cell_state
+  }
+  hooks <- if (!defer && identical(simulation$growth_engine$id, "biomass52"))
     landisR_biomass_backend()$fire
   sources <- if (!is.null(hooks)) hooks$capture_sources(simulation, cells)
 
   if (!is.null(update)) {
     simulation <- landis_apply(simulation, update)
     simulation$history[[length(simulation$history)]]$year <- year
+  }
+
+  if (defer && !is.null(update)) {
+    deaths <- landis_removed_cohorts_cpp(before_states, simulation$states,
+      before_cells, simulation$cell_state, active_ids, cells)
+    simulation <- landisR_queue_regeneration(simulation, deaths$cell_id,
+      deaths$species_index, deaths$age, "fire")
   }
 
   recruited <- if (is.null(hooks)) {

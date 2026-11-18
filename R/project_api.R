@@ -812,7 +812,8 @@ print.landisR_project <- function(
 
 landis_from_canonical <- function(
     x,
-    name = "canonical_project") {
+    name = "canonical_project",
+    cache_file = NULL) {
 
   if (is.character(
         x
@@ -828,10 +829,14 @@ landis_from_canonical <- function(
         mustWork = TRUE
       )
 
-    canonical <-
-      landisR_biomass_backend()$read_canonical(
-        root
-      )
+    biomass <- landisR_biomass_backend()
+    canonical <- if (is.null(cache_file)) {
+      biomass$read_canonical(root)
+    } else {
+      if (!is.function(biomass$read_canonical_cached))
+        landisR_stop("Update landisR.succession.biomass to use a binary canonical cache.")
+      biomass$read_canonical_cached(root, cache_file)
+    }
 
     return(
       landisR_project(
@@ -843,6 +848,9 @@ landis_from_canonical <- function(
       )
     )
   }
+
+  if (!is.null(cache_file))
+    landisR_stop("cache_file requires a canonical input directory.")
 
   landisR_project(
     canonical = x,
